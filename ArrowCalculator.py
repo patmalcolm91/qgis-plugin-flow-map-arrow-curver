@@ -70,7 +70,7 @@ def getArcsFromLayer(lineLayer):
     """
     Generates a list of Arc objects from the lines in the given layer.
     :param lineLayer: layer object
-    :return: list(FlowMap.Arc)
+    :return: list[FlowMap.Arc]
     :type lineLayer QgsVectorLayer
     """
     arcs = []
@@ -82,7 +82,23 @@ def getArcsFromLayer(lineLayer):
     return arcs
 
 
-def run(iface, lineLayer, nodeThreshold=0, nodeSnap=False, repulsion=50, stiffness=1, springLength=50, stepSize=5, iterations=10):
+def getMeanDistanceBetweenNodes(nodeList):
+    """
+    Calculates the mean distance between the nodes in the list
+    :param nodeList: list of nodes
+    :return: mean distance between the nodes in nodeList
+    :type nodeList: list[FlowMap.Point]
+    """
+    distList = []
+    for i in nodeList:
+        for j in nodeList:
+            if i != j:
+                distList.append(i.distanceFrom(j))
+    return sum(distList) / len(distList)
+
+
+def run(iface, lineLayer, nodeThreshold, nodeSnap, repulsion, stiffness, springLength, stepSize,
+        iterations, outputPolylines=False):
     """
     Runs the algorithm on the given line layer with the given settings.
     :param iface: the QGIS interface handle
@@ -91,11 +107,16 @@ def run(iface, lineLayer, nodeThreshold=0, nodeSnap=False, repulsion=50, stiffne
     :param repulsion: repulsion factor between nodes and control points
     :param stiffness: stiffness of "spring" between control point and straight-line midpoint
     :param springLength: distance within which the stiffness has no effect
+    :param stepSize: value to multiply by the force to get the displacement each iteration
+    :param iterations: number of iterations
+    :param outputPolylines: if true, output a 3-point polyline instead of a circular arc
     :return: None
     :type iface: QgisInterface
     :type lineLayer: QgsVectorLayer
+    :type iterations: int
     """
     nodes = getNodesFromLineLayer(lineLayer, threshold=nodeThreshold)
+    scale = getMeanDistanceBetweenNodes(nodes) / 100
     if nodeSnap:
         snapLinesToNodes(lineLayer, nodes, nodeThreshold)
         iface.mapCanvas().refresh()
@@ -104,25 +125,29 @@ def run(iface, lineLayer, nodeThreshold=0, nodeSnap=False, repulsion=50, stiffne
     arcs = getArcsFromLayer(lineLayer)
     for iteration in range(iterations):
         # Calculate the forces on each control point
-        forces = []
-        for arc in arcs:
+        forces = [FlowMap.Vector(0, 0) for a in arcs]
+        for a, arc in enumerate(arcs):
             displacementVector = FlowMap.vectorFromPoints(arc.midPoint, arc.controlPoint)  # displacement of the ctrl pt
-            force = displacementVector*-1*stiffness  # the spring force pulling the ctrl pt back to the midpt
+            displacementVector.scale(displacementVector.getMagnitude())  # 'square' the displacement
+            # calculate the spring force pulling the ctrl pt back to the midpt
+            force = displacementVector*-1*stiffness
             if displacementVector.getMagnitude() < springLength:
-                force *= -1  # if we're within the spring length, the force should go backwards
+                # if we're within the spring length, the force should go backwards
+                force *= -1*(springLength-displacementVector.getMagnitude())
             for node in nodes:
                 dist = FlowMap.vectorFromPoints(node, arc.controlPoint)
                 push = repulsion/(dist.getMagnitude()**2)
-                dist.setMagnitude(push)
+                dist.setMagnitude(push)  # apply push in direction of dist
                 force += dist
-            forces.append(force)
+            forces[a] = force
         # Move the control points based on the forces acting on each
         for a, arc in enumerate(arcs):
-            arc.controlPoint += forces[a]*stepSize
+            projForce = forces[a] * (arc.perpVector.dotProduct(forces[a])) # project the force onto the perpendicular
+            arc.controlPoint += projForce*stepSize
     # iterations are done, so now we can write the geometry out
     lineLayer.startEditing()
     for arc in arcs:
-        geom = QgsGeometry.fromWkt(arc.getWKT())
+        geom = QgsGeometry.fromWkt(arc.getWKT(asPolyline=outputPolylines))
         lineLayer.changeGeometry(arc.fid, geom)
     lineLayer.commitChanges()
     iface.mapCanvas().refresh()

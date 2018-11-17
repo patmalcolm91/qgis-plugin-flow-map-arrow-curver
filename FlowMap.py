@@ -116,16 +116,28 @@ class Arc:
         self.endPoint = endPoint
         self.midPoint = Point((startPoint.x + endPoint.x)/2, (startPoint.y + endPoint.y)/2)  # straight-line midpoint
         self.controlPoint = deepcopy(self.midPoint)
+        self.perpVector = self.getPerpendicularVector()
 
-    def getWKT(self):
+    def getWKT(self, asPolyline=False):
         """
-        Generates the Well-Known-Text (WKT) string for this circular arc segment.
-        :return:
+        Generates the Well-Known-Text (WKT) string for this circular arc segment, or as a polyline if specified.
+        :param asPolyline: if true, returns a 3-point polyline instead of an arc segment
+        :return: WKT string
         """
-        result = "CIRCULARSTRING("
+        result = "LINESTRING(" if asPolyline else "CIRCULARSTRING("
         result += str(self.startPoint.x) + " " + str(self.startPoint.y) + ", "
         result += str(self.controlPoint.x) + " " + str(self.controlPoint.y) + ", "
         result += str(self.endPoint.x) + " " + str(self.endPoint.y) + ")"
+        return result
+
+    def getPerpendicularVector(self):
+        """
+        Calculates the vector perpendicular to the chord connecting the start and end point.
+        :return: the perpendicular vector
+        """
+        chord = vectorFromPoints(self.startPoint, self.endPoint)
+        result = Vector(chord.y, chord.x*-1)
+        result.setMagnitude(1)
         return result
 
 
