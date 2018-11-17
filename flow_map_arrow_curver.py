@@ -27,6 +27,7 @@ import resources
 # Import the code for the dialog
 from flow_map_arrow_curver_dialog import FlowMapArrowCurverDialog
 import os.path
+import ArrowCalculator
 
 
 class FlowMapArrowCurver:
@@ -184,10 +185,12 @@ class FlowMapArrowCurver:
         """Run method that performs all the real work"""
         # Add line layers to the combo box
         layers = self.iface.legendInterface().layers()
-        layer_list = []
-        for layer in layers:
-            if layer.geometryType() == 1: # 0: point, 1: line
-                layer_list.append(layer.name())
+        layer_list = []  # holds the filtered layer names
+        indexMap = dict()  # maps the index of the full layer list to the filtered list
+        for i, layer in enumerate(layers):
+            if layer.geometryType() == 1:  # 0: point, 1: line
+                indexMap[len(layer_list)] = i  # put the index pair in the dictionary
+                layer_list.append(layer.name())  # add the layer name to the drop-down
         self.dlg.lineLayerChooser.clear()
         self.dlg.lineLayerChooser.addItems(layer_list)
         # show the dialog
@@ -196,6 +199,6 @@ class FlowMapArrowCurver:
         result = self.dlg.exec_()
         # See if OK was pressed
         if result:
-            # Do something useful here - delete the line containing pass and
-            # substitute with your code.
-            pass
+            selectedLayerIndex = indexMap[self.dlg.lineLayerChooser.currentIndex()]
+            selectedLayer = layers[selectedLayerIndex]
+            ArrowCalculator.run(self.iface, selectedLayer)
