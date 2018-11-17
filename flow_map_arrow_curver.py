@@ -199,6 +199,10 @@ class FlowMapArrowCurver:
         result = self.dlg.exec_()
         # See if OK was pressed
         if result:
+            # Get the selected layer
             selectedLayerIndex = indexMap[self.dlg.lineLayerChooser.currentIndex()]
             selectedLayer = layers[selectedLayerIndex]
-            ArrowCalculator.run(self.iface, selectedLayer)
+            # Get the Node Threshold
+            nodeThreshold = self.dlg.nodeThresholdBox.value()
+            # Run the algorithm
+            ArrowCalculator.run(self.iface, selectedLayer, nodeThreshold=nodeThreshold)

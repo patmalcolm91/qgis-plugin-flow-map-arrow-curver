@@ -28,7 +28,7 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="1">
+   <item row="4" column="1">
     <widget class="QDialogButtonBox" name="button_box">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -38,7 +38,7 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="1">
+   <item row="2" column="1">
     <widget class="QSlider" name="repulsionSlider">
      <property name="toolTip">
       <string>The force with which nodes repel the arc control points.</string>
@@ -48,14 +48,14 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="0">
+   <item row="2" column="0">
     <widget class="QLabel" name="repulsionLabel">
      <property name="text">
       <string>Repulsion:</string>
      </property>
     </widget>
    </item>
-   <item row="2" column="1">
+   <item row="3" column="1">
     <widget class="QSlider" name="stiffnessSlider">
      <property name="toolTip">
       <string>The force with which arc control points are attracted back to the straight-line midpoint.</string>
@@ -65,10 +65,30 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="0">
+   <item row="3" column="0">
     <widget class="QLabel" name="stiffnessLabel">
      <property name="text">
       <string>Stiffness:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="nodeThresholdLabel">
+     <property name="text">
+      <string>Node Threshold:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QDoubleSpinBox" name="nodeThresholdBox">
+     <property name="toolTip">
+      <string>Threshold distance for considering two nodes the same.</string>
+     </property>
+     <property name="maximum">
+      <double>1000.000000000000000</double>
+     </property>
+     <property name="value">
+      <double>0.000000000000000</double>
      </property>
     </widget>
    </item>

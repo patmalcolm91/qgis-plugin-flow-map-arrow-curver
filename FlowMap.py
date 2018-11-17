@@ -16,6 +16,9 @@ class Point:
     def __repr__(self):
         return "Point(" + str(self.x) + ", " + str(self.y) + ")"
 
+    def distanceFrom(self, other):
+        return math.sqrt((self.x - other.x)**2 + (self.y - other.y)**2)
+
 
 class Vector:
     """
