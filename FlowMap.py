@@ -28,6 +28,15 @@ class Vector:
     def __repr__(self):
         return "Vector<" + str(self.x) + ", " + str(self.y) + ">"
 
+    def __mul__(self, other):
+        return self.dotProduct(other)
+
+    def __add__(self, other):
+        return Vector(self.x+other.x, self.y+other.y)
+
+    def __sub__(self, other):
+        return Vector(self.x - other.x, self.y - other.y)
+
     def scale(self, factor):
         """
         Scales the vector by the given factor.
@@ -106,3 +115,4 @@ def vectorFromPoints(p1, p2):
 # print(v1.dotProduct(v2))
 # print(v1)
 # print(v2.getDirection()*180/math.pi)
+# print(v1-v2)
