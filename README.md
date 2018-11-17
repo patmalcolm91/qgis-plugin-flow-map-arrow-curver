@@ -1,4 +1,4 @@
-# Project Title
+# Flow Map Curved Arrow Calculator - QGIS Plugin
 
 This is an attempt to create a QGIS plugin which can be used to generate curved flow arrows for use in creating an OD
 flow map.
