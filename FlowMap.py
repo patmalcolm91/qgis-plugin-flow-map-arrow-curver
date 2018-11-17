@@ -3,7 +3,7 @@ Holds classes and functions used by the algorithm.
 """
 
 import math
-
+from copy import deepcopy
 
 class Point:
     """
@@ -95,6 +95,29 @@ class Vector:
         :type vector: Vector
         """
         return self.x * vector.x + self.y * vector.y
+
+
+class Arc:
+    """
+    A 3-point arc class with methods to help interfacing with qgis geometry objects.
+    """
+    def __init__(self, fid, startPoint, endPoint):
+        self.fid = fid  # corresponding object's FID
+        self.startPoint = startPoint
+        self.endPoint = endPoint
+        self.midPoint = Point((startPoint.x + endPoint.x)/2, (startPoint.y + endPoint.y)/2)  # straight-line midpoint
+        self.controlPoint = deepcopy(self.midPoint)
+
+    def getWKT(self):
+        """
+        Generates the Well-Known-Text (WKT) string for this circular arc segment.
+        :return:
+        """
+        result = "CIRCULARSTRING("
+        result += str(self.startPoint.x) + " " + str(self.startPoint.y) + ", "
+        result += str(self.controlPoint.x) + " " + str(self.controlPoint.y) + ", "
+        result += str(self.endPoint.x) + " " + str(self.endPoint.y) + ")"
+        return result
 
 
 def vectorFromPoints(p1, p2):
