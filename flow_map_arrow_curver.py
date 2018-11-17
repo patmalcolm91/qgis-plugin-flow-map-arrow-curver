@@ -204,5 +204,7 @@ class FlowMapArrowCurver:
             selectedLayer = layers[selectedLayerIndex]
             # Get the Node Threshold
             nodeThreshold = self.dlg.nodeThresholdBox.value()
+            # Get the snap nodes checkbox value
+            nodeSnap = self.dlg.snapNodesBox.checkState() == 2
             # Run the algorithm
-            ArrowCalculator.run(self.iface, selectedLayer, nodeThreshold=nodeThreshold)
+            ArrowCalculator.run(self.iface, selectedLayer, nodeThreshold=nodeThreshold, nodeSnap=nodeSnap)

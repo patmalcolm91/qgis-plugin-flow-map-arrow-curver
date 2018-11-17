@@ -7,20 +7,16 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>152</height>
+    <height>200</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Flow Map Curved Arrow Calculator</string>
   </property>
   <layout class="QFormLayout" name="formLayout">
-   <item row="0" column="1">
-    <widget class="QComboBox" name="lineLayerChooser">
-     <property name="toolTip">
-      <string>The layer containing the lines between OD pairs.</string>
-     </property>
-    </widget>
-   </item>
+   <property name="fieldGrowthPolicy">
+    <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+   </property>
    <item row="0" column="0">
     <widget class="QLabel" name="odPairLinesLabel">
      <property name="text">
@@ -28,47 +24,10 @@
      </property>
     </widget>
    </item>
-   <item row="4" column="1">
-    <widget class="QDialogButtonBox" name="button_box">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="1">
-    <widget class="QSlider" name="repulsionSlider">
+   <item row="0" column="1">
+    <widget class="QComboBox" name="lineLayerChooser">
      <property name="toolTip">
-      <string>The force with which nodes repel the arc control points.</string>
-     </property>
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="repulsionLabel">
-     <property name="text">
-      <string>Repulsion:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="1">
-    <widget class="QSlider" name="stiffnessSlider">
-     <property name="toolTip">
-      <string>The force with which arc control points are attracted back to the straight-line midpoint.</string>
-     </property>
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="stiffnessLabel">
-     <property name="text">
-      <string>Stiffness:</string>
+      <string>The layer containing the lines between OD pairs.</string>
      </property>
     </widget>
    </item>
@@ -89,6 +48,70 @@
      </property>
      <property name="value">
       <double>0.000000000000000</double>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="repulsionLabel">
+     <property name="text">
+      <string>Repulsion:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QSlider" name="repulsionSlider">
+     <property name="toolTip">
+      <string>The force with which nodes repel the arc control points.</string>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="stiffnessLabel">
+     <property name="text">
+      <string>Stiffness:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="QSlider" name="stiffnessSlider">
+     <property name="toolTip">
+      <string>The force with which arc control points are attracted back to the straight-line midpoint.</string>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="1">
+    <widget class="QDialogButtonBox" name="button_box">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="snapNodesLabel">
+     <property name="text">
+      <string>Snap to Nodes:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QCheckBox" name="snapNodesBox">
+     <property name="toolTip">
+      <string>Whether or not to snap lines to the calculated nodes.</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
      </property>
     </widget>
    </item>

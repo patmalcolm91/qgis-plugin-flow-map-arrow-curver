@@ -4,6 +4,7 @@ Contains functions to calculate the arrow curves.
 
 import FlowMap
 from qgis.gui import QgsMessageBar
+from qgis.core import *
 
 
 def getNodesFromLineLayer(layer, threshold=0):
@@ -39,7 +40,33 @@ def getNodesFromLineLayer(layer, threshold=0):
     return nodes
 
 
-def run(iface, lineLayer, nodeThreshold=0, repulsion=1, stiffness=1):
+def snapLinesToNodes(lineLayer, nodeList, threshold):
+    """
+    Snaps line endpoints to nodes.
+    :param lineLayer: line layer
+    :param nodeList: list of nodes
+    :param threshold: threshold distance for snapping
+    :type lineLayer: QgsVectorLayer
+    :type nodeList: list(Point)
+    :return: None
+    """
+    lineLayer.startEditing()
+    for feature in lineLayer.getFeatures():
+        geom = feature.geometry().asPolyline()
+        startPoint = FlowMap.Point(geom[0].x(), geom[0].y())
+        endPoint = FlowMap.Point(geom[-1].x(), geom[-1].y())
+        for node in nodeList:
+            nodePoint = QgsPoint(node.x, node.y)
+            if startPoint.distanceFrom(node) < threshold:
+                geom[0] = nodePoint
+            if endPoint.distanceFrom(node) < threshold:
+                geom[-1] = nodePoint
+        newGeom = QgsGeometry.fromPolyline(geom)
+        lineLayer.dataProvider().changeGeometryValues({feature.id(): newGeom})
+    lineLayer.commitChanges()
+
+
+def run(iface, lineLayer, nodeThreshold=0, nodeSnap=False, repulsion=1, stiffness=1):
     """
     Runs the algorithm on the given line layer with the given settings.
     :param iface: the QGIS interface handle
@@ -52,5 +79,8 @@ def run(iface, lineLayer, nodeThreshold=0, repulsion=1, stiffness=1):
     :type lineLayer: QgsVectorLayer
     """
     nodes = getNodesFromLineLayer(lineLayer, threshold=nodeThreshold)
-    iface.messageBar().pushMessage("Done", "Number of nodes found: "+str(len(nodes)),
-                                   level=QgsMessageBar.INFO, duration=5)
+    if nodeSnap:
+        snapLinesToNodes(lineLayer, nodes, nodeThreshold)
+        iface.mapCanvas().refresh()
+        iface.messageBar().pushMessage("Geometry edited", "Number of nodes found: "+str(len(nodes)),
+                                       level=QgsMessageBar.INFO, duration=2)
