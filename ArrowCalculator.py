@@ -66,7 +66,23 @@ def snapLinesToNodes(lineLayer, nodeList, threshold):
     lineLayer.commitChanges()
 
 
-def run(iface, lineLayer, nodeThreshold=0, nodeSnap=False, repulsion=1, stiffness=1):
+def getArcsFromLayer(lineLayer):
+    """
+    Generates a list of Arc objects from the lines in the given layer.
+    :param lineLayer: layer object
+    :return: list(FlowMap.Arc)
+    :type lineLayer QgsVectorLayer
+    """
+    arcs = []
+    for feature in lineLayer.getFeatures():
+        geom = feature.geometry().asPolyline()
+        startPoint = FlowMap.Point(geom[0].x(), geom[0].y())
+        endPoint = FlowMap.Point(geom[-1].x(), geom[-1].y())
+        arcs.append(FlowMap.Arc(feature.id(), startPoint, endPoint))
+    return arcs
+
+
+def run(iface, lineLayer, nodeThreshold=0, nodeSnap=False, repulsion=50, stiffness=1, springLength=50, stepSize=5, iterations=10):
     """
     Runs the algorithm on the given line layer with the given settings.
     :param iface: the QGIS interface handle
@@ -74,6 +90,7 @@ def run(iface, lineLayer, nodeThreshold=0, nodeSnap=False, repulsion=1, stiffnes
     :param nodeThreshold: distance within which two nodes are considered to be the same
     :param repulsion: repulsion factor between nodes and control points
     :param stiffness: stiffness of "spring" between control point and straight-line midpoint
+    :param springLength: distance within which the stiffness has no effect
     :return: None
     :type iface: QgisInterface
     :type lineLayer: QgsVectorLayer
@@ -82,5 +99,31 @@ def run(iface, lineLayer, nodeThreshold=0, nodeSnap=False, repulsion=1, stiffnes
     if nodeSnap:
         snapLinesToNodes(lineLayer, nodes, nodeThreshold)
         iface.mapCanvas().refresh()
-        iface.messageBar().pushMessage("Geometry edited", "Number of nodes found: "+str(len(nodes)),
+        iface.messageBar().pushMessage("Geometry edited", "Number of nodes snapped to: "+str(len(nodes)),
                                        level=QgsMessageBar.INFO, duration=2)
+    arcs = getArcsFromLayer(lineLayer)
+    for iteration in range(iterations):
+        # Calculate the forces on each control point
+        forces = []
+        for arc in arcs:
+            displacementVector = FlowMap.vectorFromPoints(arc.midPoint, arc.controlPoint)  # displacement of the ctrl pt
+            force = displacementVector*-1*stiffness  # the spring force pulling the ctrl pt back to the midpt
+            if displacementVector.getMagnitude() < springLength:
+                force *= -1  # if we're within the spring length, the force should go backwards
+            for node in nodes:
+                dist = FlowMap.vectorFromPoints(node, arc.controlPoint)
+                push = repulsion/(dist.getMagnitude()**2)
+                dist.setMagnitude(push)
+                force += dist
+            forces.append(force)
+        # Move the control points based on the forces acting on each
+        for a, arc in enumerate(arcs):
+            arc.controlPoint += forces[a]*stepSize
+    # iterations are done, so now we can write the geometry out
+    lineLayer.startEditing()
+    for arc in arcs:
+        geom = QgsGeometry.fromWkt(arc.getWKT())
+        lineLayer.changeGeometry(arc.fid, geom)
+    lineLayer.commitChanges()
+    iface.mapCanvas().refresh()
+    iface.messageBar().pushMessage("Flow Map Arrow Curver", "Operation Complete", level=QgsMessageBar.INFO, duration=2)

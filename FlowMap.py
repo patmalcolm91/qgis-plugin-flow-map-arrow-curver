@@ -5,6 +5,7 @@ Holds classes and functions used by the algorithm.
 import math
 from copy import deepcopy
 
+
 class Point:
     """
     A 2D point class.
@@ -15,6 +16,9 @@ class Point:
 
     def __repr__(self):
         return "Point(" + str(self.x) + ", " + str(self.y) + ")"
+
+    def __add__(self, other):
+        return Point(self.x+other.x, self.y+other.y)
 
     def distanceFrom(self, other):
         return math.sqrt((self.x - other.x)**2 + (self.y - other.y)**2)
@@ -32,7 +36,12 @@ class Vector:
         return "Vector<" + str(self.x) + ", " + str(self.y) + ">"
 
     def __mul__(self, other):
-        return self.dotProduct(other)
+        if hasattr(other, "x") and hasattr(other, "y"):
+            return self.dotProduct(other)
+        else:
+            result = deepcopy(self)
+            result.scale(other)
+            return result
 
     def __add__(self, other):
         return Vector(self.x+other.x, self.y+other.y)
@@ -142,3 +151,4 @@ def vectorFromPoints(p1, p2):
 # print(v1)
 # print(v2.getDirection()*180/math.pi)
 # print(v1-v2)
+# print(v2*3)
