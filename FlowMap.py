@@ -53,31 +53,36 @@ class Vector:
         """
         Scales the vector by the given factor.
         :param factor: factor by which to scale.
-        :return: None
+        :return: self
         """
         self.x *= factor
         self.y *= factor
+        return self
 
     def getMagnitude(self):
         """
         Calculates the magnitude of the vector
         :return: Magnitude of the vector
         """
-        return math.sqrt(self.x**2 + self.y**2)
+        try:
+            return math.sqrt(self.x**2 + self.y**2)
+        except:
+            print(self)
+            raise Exception("Numbers out of range.")
 
     def setMagnitude(self, magnitude):
         """
         Sets the magnitude of the vector, maintaining its direction.
         :param magnitude: the desired magnitude
-        :return: True if successful, False if couldn't change due to zero magnitude.
+        :return: self if successful, None if couldn't change due to zero magnitude.
         """
         m0 = self.getMagnitude()
         if m0 != 0:
             f = magnitude / m0
             self.scale(f)
-            return True
+            return self
         else:
-            return False
+            return None
 
     def normalize(self):
         """
@@ -104,6 +109,18 @@ class Vector:
         :type vector: Vector
         """
         return self.x * vector.x + self.y * vector.y
+
+    def projectionOnto(self, other):
+        """
+        Calculates the projection of this vector onto another.
+        :param other: vector onto which to project
+        :return: resultant vector
+        :type other: Vector
+        """
+        dp = self.dotProduct(other)
+        uv = deepcopy(other)
+        uv.setMagnitude(dp/other.getMagnitude())
+        return uv
 
 
 class Arc:
@@ -164,3 +181,13 @@ def vectorFromPoints(p1, p2):
 # print(v2.getDirection()*180/math.pi)
 # print(v1-v2)
 # print(v2*3)
+#
+# p1, p2 = Point(0, 100), Point(100, 0)
+# arc = Arc(1, p1, p2)
+# perp = arc.getPerpendicularVector()
+# arc.controlPoint += perp.scale(10)
+# print(arc.getWKT())
+#
+# v1 = Vector(0, 20)
+# v2 = Vector(3, 5)
+# print(v2.projectionOnto(v1))

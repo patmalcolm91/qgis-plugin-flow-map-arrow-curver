@@ -5,6 +5,7 @@ Contains functions to calculate the arrow curves.
 import FlowMap
 from qgis.gui import QgsMessageBar
 from qgis.core import *
+from copy import deepcopy
 
 
 def getNodesFromLineLayer(layer, threshold=0):
@@ -116,7 +117,7 @@ def run(iface, lineLayer, nodeThreshold, nodeSnap, repulsion, stiffness, springL
     :type iterations: int
     """
     nodes = getNodesFromLineLayer(lineLayer, threshold=nodeThreshold)
-    scale = getMeanDistanceBetweenNodes(nodes) / 100
+    scale = getMeanDistanceBetweenNodes(nodes)
     if nodeSnap:
         snapLinesToNodes(lineLayer, nodes, nodeThreshold)
         iface.mapCanvas().refresh()
@@ -128,22 +129,31 @@ def run(iface, lineLayer, nodeThreshold, nodeSnap, repulsion, stiffness, springL
         forces = [FlowMap.Vector(0, 0) for a in arcs]
         for a, arc in enumerate(arcs):
             displacementVector = FlowMap.vectorFromPoints(arc.midPoint, arc.controlPoint)  # displacement of the ctrl pt
-            displacementVector.scale(displacementVector.getMagnitude())  # 'square' the displacement
+            # displacementVector.scale(displacementVector.getMagnitude())  # 'square' the displacement
             # calculate the spring force pulling the ctrl pt back to the midpt
-            force = displacementVector*-1*stiffness
-            if displacementVector.getMagnitude() < springLength:
+            if displacementVector.getMagnitude() > springLength:
+                # if we're farther out than the spring length, just use the displacement
+                force = deepcopy(displacementVector)
+                extension = displacementVector.getMagnitude() - springLength
+                force.setMagnitude(extension)
+            else:
                 # if we're within the spring length, the force should go backwards
-                force *= -1*(springLength-displacementVector.getMagnitude())
+                force = deepcopy(displacementVector)
+                compression = springLength - displacementVector.getMagnitude()
+                force.setMagnitude(compression)
             for node in nodes:
                 dist = FlowMap.vectorFromPoints(node, arc.controlPoint)
                 push = repulsion/(dist.getMagnitude()**2)
-                dist.setMagnitude(push)  # apply push in direction of dist
+                dist.setMagnitude(scale*push)  # apply push in direction of dist
                 force += dist
             forces[a] = force
         # Move the control points based on the forces acting on each
         for a, arc in enumerate(arcs):
-            projForce = forces[a] * (arc.perpVector.dotProduct(forces[a])) # project the force onto the perpendicular
-            arc.controlPoint += projForce*stepSize
+            projForce = forces[a].projectionOnto(arc.perpVector)  # project the force onto the perpendicular
+            # projForce *= stepSize
+            arc.controlPoint += projForce
+            if iteration % 10 == 0:
+                print("force on fid " + str(arc.fid) + ": " + str(projForce))
     # iterations are done, so now we can write the geometry out
     lineLayer.startEditing()
     for arc in arcs:

@@ -221,4 +221,4 @@ class FlowMapArrowCurver:
             # Run the algorithm
             ArrowCalculator.run(iface=self.iface, lineLayer=selectedLayer, nodeThreshold=nodeThreshold,
                                 nodeSnap=nodeSnap, repulsion=repulsion, stiffness=stiffness, springLength=springLength,
-                                stepSize=stepSize, iterations=nIter)
+                                stepSize=stepSize, iterations=nIter, outputPolylines=outputPolylines)
