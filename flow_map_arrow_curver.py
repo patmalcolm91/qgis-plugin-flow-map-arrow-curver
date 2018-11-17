@@ -182,6 +182,14 @@ class FlowMapArrowCurver:
 
     def run(self):
         """Run method that performs all the real work"""
+        # Add line layers to the combo box
+        layers = self.iface.legendInterface().layers()
+        layer_list = []
+        for layer in layers:
+            if layer.geometryType() == 1: # 0: point, 1: line
+                layer_list.append(layer.name())
+        self.dlg.lineLayerChooser.clear()
+        self.dlg.lineLayerChooser.addItems(layer_list)
         # show the dialog
         self.dlg.show()
         # Run the dialog event loop
