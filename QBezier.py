@@ -19,9 +19,9 @@ class QBezier(object):
         :type p1: Point
         :type p2: Point
         """
-        self.p0 = p0
-        self.p1 = p1
-        self.p2 = p2
+        self.p0 = p0  # type: Point
+        self.p1 = p1  # type: Point
+        self.p2 = p2  # type: Point
 
     def getPointAt(self, t):
         """

@@ -53,19 +53,46 @@ class FlowLine(QBezier):
         self.fid = fid  # fid of the corresponding object
         self.startNode = self.p0
         self.endNode = self.p2
+        self.intermediatePointsCache = []  # holds a cache of the intermediate points to reduce redundant calculations
+
+    def cacheIntermediatePoints(self, resolution):
+        """
+        Updates the intermediate points cache
+        :param resolution: how many intermediate points to calculate
+        :return: None
+        :type resolution: int
+        """
+        self.intermediatePointsCache = self.getIntermediateCurvePoints(resolution)
+
+    def getNearestIntermediatePoint(self, refPoint):
+        """
+        Returns the intermediate point (from the cache) nearest to the reference point
+        :param refPoint: reference point. find intermediate point nearest to this point.
+        :return: Point object
+        :type refPoint: Point
+        """
+        points = self.intermediatePointsCache
+        winner, winningDistance = None, None
+        for point in points:
+            dist = refPoint.distanceFrom(point)
+            if winner is None or dist < winningDistance:
+                winner = point
+                winningDistance = dist
+        return winner
 
 
 class FlowMap(object):
     """
     An object which holds a set of Nodes and FlowLines along with various parameters.
     """
-    def __init__(self, snapThreshold=0, bezierRes=15, alpha=4):
+    def __init__(self, snapThreshold=0, bezierRes=15, alpha=4, beta=4):
         self.nodes = []  # type: list[Node]
         self.flowlines = []  # type: list[FlowLine]
         self.mapScale = 1  # type: int  # order of magnitude of the map. Used to scale values to avoid extreme values
         self.snapThreshold = snapThreshold  # type: float
         self.bezierRes = bezierRes  # type: int
         self.alpha = alpha  # type: int  # decay exponent for inter-flowline forces
+        self.beta = beta  # type: int  # decay exponent for node-to-flow forces
 
     def getNodesFromLineLayer(self, layer):
         """
@@ -128,6 +155,7 @@ class FlowMap(object):
                 if endPoint.distanceFrom(node) <= self.snapThreshold:
                     endNode = node
             flowline = FlowLine(startNode, endNode, fid=feature.id())
+            flowline.cacheIntermediatePoints(self.bezierRes)
             self.flowlines.append(flowline)
             startNode.outflows.append(flowline)
             endNode.inflows.append(flowline)
@@ -140,7 +168,7 @@ class FlowMap(object):
         """
         forces = []  # type: list[Vector]
         for flowline in self.flowlines:
-            flPts = flowline.getIntermediateCurvePoints(self.bezierRes)
+            flPts = flowline.intermediatePointsCache
             Fflows = Vector(0, 0)
             n = 0
             for pt in flPts:
@@ -149,7 +177,7 @@ class FlowMap(object):
                     if flowline == other or (
                             flowline.startNode == other.endNode and flowline.endNode == other.startNode):
                         continue  # skip identical or mirror images of this flowline
-                    otherPts = other.getIntermediateCurvePoints(self.bezierRes)
+                    otherPts = other.intermediatePointsCache
                     for otherPt in otherPts:
                         dj = vectorFromPoints(otherPt, pt)
                         dj.scale(1.0/self.mapScale)
@@ -157,12 +185,45 @@ class FlowMap(object):
                         sumdw += dj*wj
                         sumw += wj
                         n += 1
-                Fp = sumdw.scale(1/sumw)
+                Fp = sumdw.scale(1.0/sumw)
                 Fflows += Fp
             Fflows.scale(float(self.mapScale)/n)
             forces.append(Fflows)
         return forces
 
+    def calculateNodeToFlowLineForces(self):
+        """
+        Calculates the force which nodes exert on each flowline.
+        See section 3.1.2 of Jenny et al
+        :return: list of forces in the same order as self.flowlines
+        """
+        forces = []  # type: list[Vector]
+        for flowline in self.flowlines:
+            sumdw, sumw = Vector(0, 0), 0
+            for node in self.nodes:
+                if node == flowline.startNode or node == flowline.endNode:
+                    continue  # skip nodes to which we're connected
+                nearestPoint = flowline.getNearestIntermediatePoint(node)
+                dj = vectorFromPoints(node, nearestPoint)
+                dj.scale(1.0 / self.mapScale)
+                wj = math.pow(dj.getMagnitude(), -1 * self.beta)
+                sumdw += dj * wj
+                sumw += wj
+            Fnodes = sumdw
+            Fnodes.scale(float(self.mapScale)/sumw)
+            forces.append(Fnodes)
+        return forces
+
+    def applyForces(self, forces):
+        """
+        Applies forces to the control points.
+        :param forces: list of forces to apply.
+        :return: None
+        :type forces: list[Vector]
+        """
+        for i, force in enumerate(forces):
+            self.flowlines[i].p1 += force
+            self.flowlines[i].cacheIntermediatePoints(self.bezierRes)
 
 def run(iface, lineLayer, iterations, snapThreshold=0, bezierRes=15):
     """
@@ -179,7 +240,7 @@ def run(iface, lineLayer, iterations, snapThreshold=0, bezierRes=15):
         # Calculate flowline-against-flowline forces
         flowline_forces = fm.calculateInterFlowLineForces()
         # Calculate node-against-flowline forces
-
+        node_forces = fm.calculateNodeToFlowLineForces()
         # Calculate anti-torsion forces
 
         # Calculate spring forces
