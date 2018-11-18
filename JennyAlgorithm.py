@@ -350,7 +350,6 @@ def run(iface, lineLayer, iterations, snapThreshold=0, bezierRes=15):
     # Update the geometry of the layer
     fm.updateGeometryOnLayer(lineLayer)
     iface.mapCanvas().refresh()
-    iface.messageBar().pushMessage("Flow Map Arrow Curver", "Operation Complete", level=QgsMessageBar.INFO, duration=3)
 
 
 # TEST CODE ============================================================================================================

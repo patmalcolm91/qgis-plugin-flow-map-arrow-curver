@@ -27,8 +27,9 @@ import resources
 # Import the code for the dialog
 from flow_map_arrow_curver_dialog import FlowMapArrowCurverDialog
 import os.path
-import ArrowCalculator
 import JennyAlgorithm
+from qgis.core import *
+from qgis.gui import QgsMessageBar
 
 
 class FlowMapArrowCurver:
@@ -200,25 +201,17 @@ class FlowMapArrowCurver:
         if result:
             # Get the selected layer
             selectedLayerIndex = indexMap[self.dlg.lineLayerChooser.currentIndex()]
-            selectedLayer = layers[selectedLayerIndex]
+            selectedLayer = layers[selectedLayerIndex]  # type: QgsVectorLayer
             # Get the Node Threshold
             nodeThreshold = self.dlg.nodeThresholdBox.value()
-            # # Get the snap nodes checkbox value
-            # nodeSnap = self.dlg.snapNodesBox.checkState() == 2
-            # # Get repulsion value
-            # repulsion = self.dlg.repulsionSlider.value()
-            # # Get the stiffness value
-            # stiffness = self.dlg.stiffnessSlider.value()
-            # # Get the spring length value
-            # springLength = self.dlg.springLengthSlider.value()
-            # # Get the step size value
-            # stepSize = self.dlg.stepSizeSlider.value()
-            # Get the number of iterations
             nIter = self.dlg.iterationsBox.value()
-            # # Get whether or not to output lines
-            # outputPolylines = self.dlg.outputPolylineBox.checkState() == 2
-            # # Run the algorithm
-            # ArrowCalculator.run(iface=self.iface, lineLayer=selectedLayer, nodeThreshold=nodeThreshold,
-            #                     nodeSnap=nodeSnap, repulsion=repulsion, stiffness=stiffness, springLength=springLength,
-            #                     stepSize=stepSize, iterations=nIter, outputPolylines=outputPolylines)
-            JennyAlgorithm.run(iface=self.iface, lineLayer=selectedLayer, iterations=nIter)
+            try:
+                JennyAlgorithm.run(iface=self.iface, snapThreshold=nodeThreshold, lineLayer=selectedLayer,
+                                   iterations=nIter)
+            except Exception as exception:
+                self.iface.messageBar().pushMessage("Flow Map Arrow Curver", "Operation Failed!",
+                                                    level=QgsMessageBar.WARNING, duration=5)
+                raise exception
+            else:
+                self.iface.messageBar().pushMessage("Flow Map Arrow Curver", "Operation Complete",
+                                                    level=QgsMessageBar.INFO, duration=3)
