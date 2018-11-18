@@ -85,7 +85,7 @@ class FlowMap(object):
     """
     An object which holds a set of Nodes and FlowLines along with various parameters.
     """
-    def __init__(self, snapThreshold=0, bezierRes=15, alpha=4, beta=4):
+    def __init__(self, snapThreshold=0, bezierRes=15, alpha=4, beta=4, kShort=0.5, kLong=0.05, Cp=2.5):
         self.nodes = []  # type: list[Node]
         self.flowlines = []  # type: list[FlowLine]
         self.mapScale = 1  # type: int  # order of magnitude of the map. Used to scale values to avoid extreme values
@@ -93,6 +93,9 @@ class FlowMap(object):
         self.bezierRes = bezierRes  # type: int
         self.alpha = alpha  # type: int  # decay exponent for inter-flowline forces
         self.beta = beta  # type: int  # decay exponent for node-to-flow forces
+        self.kShort = kShort  # type: float  # spring constant for short flowlines
+        self.kLong = kLong  # type: float  # spring constant for long flowlines
+        self.Cp = Cp  # type: float  # peripheral flow correction factor for spring constants
 
     def getNodesFromLineLayer(self, layer):
         """
@@ -160,17 +163,21 @@ class FlowMap(object):
             startNode.outflows.append(flowline)
             endNode.inflows.append(flowline)
 
-    def calculateInterFlowLineForces(self):
+    def calculateInterFlowLineForces(self, returnSumOfMagnitudes=False):
         """
         Calculates the flowline-against-flowline forces on each flowline.
         See section 3.1.1 of Jenny et al
+        :param returnSumOfMagnitudes: if True, the sum of the magnitudes of the forces will also be returned.
         :return: list of forces in same order as self.flowlines
+        :type returnSumOfMagnitudes: bool
         """
         forces = []  # type: list[Vector]
+        sumsOfMagnitudes = []  # type: list[float]
         for flowline in self.flowlines:
             flPts = flowline.intermediatePointsCache
             Fflows = Vector(0, 0)
             n = 0
+            sumOfMagnitudes = 0
             for pt in flPts:
                 sumdw, sumw = Vector(0, 0), 0
                 for other in self.flowlines:
@@ -186,10 +193,16 @@ class FlowMap(object):
                         sumw += wj
                         n += 1
                 Fp = sumdw.scale(1.0/sumw)
+                sumOfMagnitudes += Fp.getMagnitude()
                 Fflows += Fp
             Fflows.scale(float(self.mapScale)/n)
             forces.append(Fflows)
-        return forces
+            sumOfMagnitudes *= float(self.mapScale)
+            sumsOfMagnitudes.append(sumOfMagnitudes)
+        if returnSumOfMagnitudes:
+            return forces, sumsOfMagnitudes
+        else:
+            return forces
 
     def calculateNodeToFlowLineForces(self):
         """
@@ -228,6 +241,33 @@ class FlowMap(object):
             forces.append(force)
         return forces
 
+    def calculateSpringForces(self, interFlowLineForces, interFlowLineForceMagnitudes):
+        """
+        Calculates the spring forces on each flowline. This helps reduce curvature.
+        See section 3.1.4 of Jenny et al
+        :param interFlowLineForces: list of interFlowLine forces, needed for calculation of spring constants
+        :param interFlowLineForceMagnitudes: list of magnitudes of interFlowLine force contributions
+        :return: list of forces in same order as self.flowlines
+        :type interFlowLineForces: list[Vector]
+        :type interFlowLineForceMagnitudes: list[float]
+        """
+        # calculate the spring constants as specified in Jenny et al
+        springLengths = [f.p1.distanceFrom(f.midPoint) for f in self.flowlines]
+        B = [f.endNode.distanceFrom(f.startNode) for f in self.flowlines]
+        Bmax = max(B)
+        k = []
+        for i, f in enumerate(self.flowlines):
+            ki = (self.kLong - self.kShort)*(B[i]/Bmax) + self.kShort
+            ki *= deepcopy(interFlowLineForces[i]).scale(1.0/interFlowLineForceMagnitudes[i]).getMagnitude()*self.Cp + 1
+            k.append(ki)
+        # calculate the spring forces
+        forces = []
+        for i, flowline in enumerate(self.flowlines):
+            displacementVector = vectorFromPoints(flowline.p1, flowline.midPoint)
+            force = displacementVector*k[i]
+            forces.append(force)
+        return forces
+
     def applyForces(self, forces):
         """
         Applies forces to the control points.
@@ -252,13 +292,13 @@ def run(iface, lineLayer, iterations, snapThreshold=0, bezierRes=15):
     # Iterate
     for i in range(iterations):
         # Calculate flowline-against-flowline forces
-        flowline_forces = fm.calculateInterFlowLineForces()
+        flowline_forces, Fs = fm.calculateInterFlowLineForces(returnSumOfMagnitudes=True)
         # Calculate node-against-flowline forces
         node_forces = fm.calculateNodeToFlowLineForces()
         # Calculate anti-torsion forces
         antitorsion_forces = fm.calculateAntiTorsionForces()
         # Calculate spring forces
-
+        spring_forces = fm.calculateSpringForces(flowline_forces, Fs)
         # Calculate angular-resolution-of-flowlines-around-nodes forces
 
         # Apply forces to arc control points
