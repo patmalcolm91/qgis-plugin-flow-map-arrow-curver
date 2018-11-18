@@ -35,19 +35,40 @@ class QBezier(object):
         self.p1 = p1
         self.p2 = p2
 
+    def getPointAt(self, t):
+        """
+        Returns point at the parameter value t
+        :param t: parameter value, between 0 and 1
+        :return: Point on curve corresponding to t
+        """
+        # calculate the point using the quadratic bezier equation
+        x = ((1 - t) ** 2) * p0.x + 2 * (1 - t) * t * p1.x + t * t * p2.x
+        y = ((1 - t) ** 2) * p0.y + 2 * (1 - t) * t * p1.y + t * t * p2.y
+        return Point(x, y)
+
+    def getTangentVectorAt(self, t):
+        """
+        Returns the tangent vector at value
+        :param t: parameter value, between 0 and 1
+        :return: unit tangent vector at t
+        """
+        x = 2*(1 - t)*(p1.x - p0.x) + 2*t*(p2.x - p1.x)
+        y = 2*(1 - t)*(p1.y - p0.y) + 2*t*(p2.y - p1.y)
+        return Vector(x, y).normalize()
+
     def getStartTangentVector(self):
         """
         Returns a unit vector of the tangent at the start point. Direction is from start.
         :return: start tangent vector
         """
-        return vectorFromPoints(self.p0, self.p1).normalize()
+        return self.getTangentVectorAt(0)
 
     def getEndTangentVector(self):
         """
         Returns a unit vector of the tangent at the end point. Direction is to end.
         :return: end tangent vector
         """
-        return vectorFromPoints(self.p1, self.p2).normalize()
+        return self.getTangentVectorAt(1)
 
     def getIntermediateCurvePoints(self, num=1):
         """
@@ -60,10 +81,7 @@ class QBezier(object):
         tValues = [float(i+1)/(num+1) for i in range(num)]  # get evenly-spaced t values between 0 and 1
         result = []
         for t in tValues:
-            # calculate the point using the quadratic bezier equation
-            x = ((1-t)**2)*p0.x + 2*(1-t)*t*p1.x + t*t*p2.x
-            y = ((1 - t) ** 2) * p0.y + 2 * (1 - t) * t * p1.y + t * t * p2.y
-            result.append(Point(x, y))  # append the point to the list
+            result.append(self.getPointAt(t))  # append the point to the list
         return result
 
     def getWKT(self, num=1):
@@ -78,6 +96,7 @@ class QBezier(object):
             result += str(p.x) + " " + str(p.y) + ", "
         result = result[0:-2] + ")"
         return result
+
 
 # TEST CODE ============================================================================================================
 
