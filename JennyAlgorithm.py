@@ -5,6 +5,7 @@ Implements a version of the algorithm described by Jenny et al
 from QBezier import *
 from copy import deepcopy
 from qgis.gui import QgsMessageBar
+from qgis.core import *
 import math
 
 
@@ -85,10 +86,16 @@ class FlowMap(object):
     """
     An object which holds a set of Nodes and FlowLines along with various parameters.
     """
-    def __init__(self, snapThreshold=0, bezierRes=15, alpha=4, beta=4, kShort=0.5, kLong=0.05, Cp=2.5):
+    def __init__(self, w_flows=1, w_nodes=0.5, w_antiTorsion=0.8, w_spring=1, w_angRes=3.75,
+                 snapThreshold=0, bezierRes=15, alpha=4, beta=4, kShort=0.5, kLong=0.05, Cp=2.5):
         self.nodes = []  # type: list[Node]
         self.flowlines = []  # type: list[FlowLine]
         self.mapScale = 1  # type: int  # order of magnitude of the map. Used to scale values to avoid extreme values
+        self.w_flows = w_flows  # type: float
+        self.w_nodes = w_nodes  # type: float
+        self.w_antiTorsion = w_antiTorsion  # type: float
+        self.w_spring = w_spring  # type: float
+        self.w_angRes = w_angRes  # type: float
         self.snapThreshold = snapThreshold  # type: float
         self.bezierRes = bezierRes  # type: int
         self.alpha = alpha  # type: int  # decay exponent for inter-flowline forces
@@ -97,11 +104,31 @@ class FlowMap(object):
         self.kLong = kLong  # type: float  # spring constant for long flowlines
         self.Cp = Cp  # type: float  # peripheral flow correction factor for spring constants
 
+    def updateGeometryOnLayer(self, layer):
+        """
+        Updates the feature geometry on the layer based on the calculated curves.
+        :param layer: layer which should be updated. Must contain FIDs matching the input layer (e.g. input layer)
+        :return: None
+        :type layer: QgsVectorLayer
+        """
+        geomDict = dict()
+        for flowline in self.flowlines:
+            geomDict[flowline.fid] = flowline.getWKT(self.bezierRes)
+        layer.startEditing()
+        for feature in layer.getFeatures():
+            if feature.id() in geomDict:
+                newGeom = QgsGeometry.fromWkt(geomDict[feature.id()])
+                layer.dataProvider().changeGeometryValues({feature.id(): newGeom})
+        layer.commitChanges()
+
+
+
     def getNodesFromLineLayer(self, layer):
         """
         Generates a list points containing all the unique nodes implied by the given line layer.
         :param layer: layer from which to get nodes
         :return: List(FlowMap.Point)
+        :type layer: QgsVectorLayer
         """
         # first, loop through the features and add every start and end point
         for feature in layer.getFeatures():
@@ -197,7 +224,7 @@ class FlowMap(object):
                 Fflows += Fp
             Fflows.scale(float(self.mapScale)/n)
             forces.append(Fflows)
-            sumOfMagnitudes *= float(self.mapScale)
+            sumOfMagnitudes *= float(self.mapScale/n)
             sumsOfMagnitudes.append(sumOfMagnitudes)
         if returnSumOfMagnitudes:
             return forces, sumsOfMagnitudes
@@ -291,6 +318,7 @@ def run(iface, lineLayer, iterations, snapThreshold=0, bezierRes=15):
     fm.loadFlowLinesFromLayer(lineLayer)
     # Iterate
     for i in range(iterations):
+        w = 1 - float(i)/iterations
         # Calculate flowline-against-flowline forces
         flowline_forces, Fs = fm.calculateInterFlowLineForces(returnSumOfMagnitudes=True)
         # Calculate node-against-flowline forces
@@ -300,9 +328,17 @@ def run(iface, lineLayer, iterations, snapThreshold=0, bezierRes=15):
         # Calculate spring forces
         spring_forces = fm.calculateSpringForces(flowline_forces, Fs)
         # Calculate angular-resolution-of-flowlines-around-nodes forces
-
+        angRes_forces = [Vector(0, 0) for f in fm.flowlines]  # TODO: implement this function
         # Apply forces to arc control points
-
+        resultantForces = []
+        for i in range(len(fm.flowlines)):
+            rForce = (flowline_forces[i]*fm.w_flows +
+                      node_forces[i]*fm.w_nodes +
+                      antitorsion_forces[i]*fm.w_antiTorsion +
+                      spring_forces[i]*fm.w_spring)*w +\
+                     (angRes_forces[i]*fm.w_angRes)*(w - w**2)
+            resultantForces.append(rForce)
+        fm.applyForces(resultantForces)
         # Apply rectangle constraint
 
         pass
@@ -311,6 +347,9 @@ def run(iface, lineLayer, iterations, snapThreshold=0, bezierRes=15):
 
     # Move flows off of nodes
 
+    # Update the geometry of the layer
+    fm.updateGeometryOnLayer(lineLayer)
+    iface.mapCanvas().refresh()
     iface.messageBar().pushMessage("Flow Map Arrow Curver", "Operation Complete", level=QgsMessageBar.INFO, duration=3)
 
 
