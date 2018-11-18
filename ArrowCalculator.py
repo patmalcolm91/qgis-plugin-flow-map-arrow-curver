@@ -2,7 +2,7 @@
 Contains functions to calculate the arrow curves.
 """
 
-import FlowMap
+import Geometry
 from qgis.gui import QgsMessageBar
 from qgis.core import *
 from copy import deepcopy
@@ -19,8 +19,8 @@ def getNodesFromLineLayer(layer, threshold=0):
     # first, loop through the features and add every start and end point
     for feature in layer.getFeatures():
         geom = feature.geometry().asPolyline()
-        startPoint = FlowMap.Point(geom[0].x(), geom[0].y())
-        endPoint = FlowMap.Point(geom[-1].x(), geom[-1].y())
+        startPoint = Geometry.Point(geom[0].x(), geom[0].y())
+        endPoint = Geometry.Point(geom[-1].x(), geom[-1].y())
         if startPoint not in nodes:
             nodes.append(startPoint)
         if endPoint not in nodes:
@@ -54,8 +54,8 @@ def snapLinesToNodes(lineLayer, nodeList, threshold):
     lineLayer.startEditing()
     for feature in lineLayer.getFeatures():
         geom = feature.geometry().asPolyline()
-        startPoint = FlowMap.Point(geom[0].x(), geom[0].y())
-        endPoint = FlowMap.Point(geom[-1].x(), geom[-1].y())
+        startPoint = Geometry.Point(geom[0].x(), geom[0].y())
+        endPoint = Geometry.Point(geom[-1].x(), geom[-1].y())
         for node in nodeList:
             nodePoint = QgsPoint(node.x, node.y)
             if startPoint.distanceFrom(node) < threshold:
@@ -77,9 +77,9 @@ def getArcsFromLayer(lineLayer):
     arcs = []
     for feature in lineLayer.getFeatures():
         geom = feature.geometry().asPolyline()
-        startPoint = FlowMap.Point(geom[0].x(), geom[0].y())
-        endPoint = FlowMap.Point(geom[-1].x(), geom[-1].y())
-        arcs.append(FlowMap.Arc(feature.id(), startPoint, endPoint))
+        startPoint = Geometry.Point(geom[0].x(), geom[0].y())
+        endPoint = Geometry.Point(geom[-1].x(), geom[-1].y())
+        arcs.append(Geometry.Arc(feature.id(), startPoint, endPoint))
     return arcs
 
 
@@ -88,7 +88,7 @@ def getMeanDistanceBetweenNodes(nodeList):
     Calculates the mean distance between the nodes in the list
     :param nodeList: list of nodes
     :return: mean distance between the nodes in nodeList
-    :type nodeList: list[FlowMap.Point]
+    :type nodeList: list[Geometry.Point]
     """
     distList = []
     for i in nodeList:
@@ -126,15 +126,15 @@ def run(iface, lineLayer, nodeThreshold, nodeSnap, repulsion, stiffness, springL
     arcs = getArcsFromLayer(lineLayer)
     for iteration in range(iterations):
         # Calculate the forces on each control point
-        forces = [FlowMap.Vector(0, 0) for a in arcs]
+        forces = [Geometry.Vector(0, 0) for a in arcs]
         for a, arc in enumerate(arcs):
-            displacementVector = FlowMap.vectorFromPoints(arc.midPoint, arc.controlPoint)  # displacement of the ctrl pt
+            displacementVector = Geometry.vectorFromPoints(arc.midPoint, arc.controlPoint)  # displacement of the ctrl pt
             # calculate the spring force pulling the ctrl pt back to the midpt
             force = deepcopy(displacementVector)
             extension = springLength - displacementVector.getMagnitude()  # accounts for both compression and tension
             force.setMagnitude(extension)
             for node in nodes:
-                dist = FlowMap.vectorFromPoints(node, arc.controlPoint)
+                dist = Geometry.vectorFromPoints(node, arc.controlPoint)
                 dist.scale(1/scale)
                 push = repulsion/(dist.getMagnitude()**2)
                 dist.setMagnitude(scale*push)  # apply push in direction of dist

@@ -2,20 +2,8 @@
 Contains objects and functions for using quadratic bezier curves.
 """
 
-from FlowMap import Point, Vector, vectorFromPoints
+from Geometry import Point, Vector, vectorFromPoints
 from qgis.core import *
-
-class Node(Point):
-    """
-    Node class which extends the point class
-    """
-    def __init__(self, x, y):
-        super(Node, self).__init__(x, y)
-        self.inflows = []  # list of curves ending at this node
-        self.outflows = []  # list of curves starting at this node
-
-    def __repr__(self):
-        return "Node(" + str(self.x) + ", " + str(self.y) + ")"
 
 
 class QBezier(object):
@@ -100,9 +88,7 @@ class QBezier(object):
 
 # TEST CODE ============================================================================================================
 
-# n = Node(0, 4)
-# print(n)
-p0, p1, p2 = Point(10, 0), Point(0, -8), Point(0, 10)
-qb = QBezier(p0, p1, p2)
-print(qb.getWKT(9))
-print(qb.getStartTangentVector())
+# p0, p1, p2 = Point(10, 0), Point(0, -8), Point(0, 10)
+# qb = QBezier(p0, p1, p2)
+# print(qb.getWKT(9))
+# print(qb.getStartTangentVector())

@@ -28,6 +28,7 @@ import resources
 from flow_map_arrow_curver_dialog import FlowMapArrowCurverDialog
 import os.path
 import ArrowCalculator
+import JennyAlgorithm
 
 
 class FlowMapArrowCurver:
@@ -82,18 +83,17 @@ class FlowMapArrowCurver:
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('FlowMapArrowCurver', message)
 
-
     def add_action(
-        self,
-        icon_path,
-        text,
-        callback,
-        enabled_flag=True,
-        add_to_menu=True,
-        add_to_toolbar=True,
-        status_tip=None,
-        whats_this=None,
-        parent=None):
+            self,
+            icon_path,
+            text,
+            callback,
+            enabled_flag=True,
+            add_to_menu=True,
+            add_to_toolbar=True,
+            status_tip=None,
+            whats_this=None,
+            parent=None):
         """Add a toolbar icon to the toolbar.
 
         :param icon_path: Path to the icon for this action. Can be a resource
@@ -169,7 +169,6 @@ class FlowMapArrowCurver:
             callback=self.run,
             parent=self.iface.mainWindow())
 
-
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
@@ -204,21 +203,22 @@ class FlowMapArrowCurver:
             selectedLayer = layers[selectedLayerIndex]
             # Get the Node Threshold
             nodeThreshold = self.dlg.nodeThresholdBox.value()
-            # Get the snap nodes checkbox value
-            nodeSnap = self.dlg.snapNodesBox.checkState() == 2
-            # Get repulsion value
-            repulsion = self.dlg.repulsionSlider.value()
-            # Get the stiffness value
-            stiffness = self.dlg.stiffnessSlider.value()
-            # Get the spring length value
-            springLength = self.dlg.springLengthSlider.value()
-            # Get the step size value
-            stepSize = self.dlg.stepSizeSlider.value()
+            # # Get the snap nodes checkbox value
+            # nodeSnap = self.dlg.snapNodesBox.checkState() == 2
+            # # Get repulsion value
+            # repulsion = self.dlg.repulsionSlider.value()
+            # # Get the stiffness value
+            # stiffness = self.dlg.stiffnessSlider.value()
+            # # Get the spring length value
+            # springLength = self.dlg.springLengthSlider.value()
+            # # Get the step size value
+            # stepSize = self.dlg.stepSizeSlider.value()
             # Get the number of iterations
             nIter = self.dlg.iterationsBox.value()
-            # Get whether or not to output lines
-            outputPolylines = self.dlg.outputPolylineBox.checkState() == 2
-            # Run the algorithm
-            ArrowCalculator.run(iface=self.iface, lineLayer=selectedLayer, nodeThreshold=nodeThreshold,
-                                nodeSnap=nodeSnap, repulsion=repulsion, stiffness=stiffness, springLength=springLength,
-                                stepSize=stepSize, iterations=nIter, outputPolylines=outputPolylines)
+            # # Get whether or not to output lines
+            # outputPolylines = self.dlg.outputPolylineBox.checkState() == 2
+            # # Run the algorithm
+            # ArrowCalculator.run(iface=self.iface, lineLayer=selectedLayer, nodeThreshold=nodeThreshold,
+            #                     nodeSnap=nodeSnap, repulsion=repulsion, stiffness=stiffness, springLength=springLength,
+            #                     stepSize=stepSize, iterations=nIter, outputPolylines=outputPolylines)
+            JennyAlgorithm.run(iface=self.iface, lineLayer=selectedLayer, iterations=nIter)
