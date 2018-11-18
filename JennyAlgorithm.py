@@ -214,6 +214,20 @@ class FlowMap(object):
             forces.append(Fnodes)
         return forces
 
+    def calculateAntiTorsionForces(self):
+        """
+        Calculates the anti-torsion forces on each flowline. This helps reduce asymmetry.
+        See Section 3.1.3 of Jenny et al
+        :return: list of anti-torsion forces in same order as self.flowlines
+        """
+        forces = []
+        for flowline in self.flowlines:
+            chordVector = vectorFromPoints(flowline.startNode, flowline.endNode)
+            displacementVector = vectorFromPoints(flowline.p1, flowline.midPoint)
+            force = displacementVector.projectionOnto(chordVector)
+            forces.append(force)
+        return forces
+
     def applyForces(self, forces):
         """
         Applies forces to the control points.
@@ -242,7 +256,7 @@ def run(iface, lineLayer, iterations, snapThreshold=0, bezierRes=15):
         # Calculate node-against-flowline forces
         node_forces = fm.calculateNodeToFlowLineForces()
         # Calculate anti-torsion forces
-
+        antitorsion_forces = fm.calculateAntiTorsionForces()
         # Calculate spring forces
 
         # Calculate angular-resolution-of-flowlines-around-nodes forces
