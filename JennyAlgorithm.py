@@ -5,6 +5,7 @@ Implements a version of the algorithm described by Jenny et al
 from QBezier import *
 from copy import deepcopy
 from qgis.gui import QgsMessageBar
+import math
 
 
 class Node(Point):
@@ -56,17 +57,20 @@ class FlowLine(QBezier):
 
 class FlowMap(object):
     """
-    An object which holds a set of Nodes and FlowLines.
+    An object which holds a set of Nodes and FlowLines along with various parameters.
     """
-    def __init__(self):
-        self.nodes = []
-        self.flowlines = []
+    def __init__(self, snapThreshold=0, bezierRes=15, alpha=4):
+        self.nodes = []  # type: list[Node]
+        self.flowlines = []  # type: list[FlowLine]
+        self.mapScale = 1  # type: int  # order of magnitude of the map. Used to scale values to avoid extreme values
+        self.snapThreshold = snapThreshold  # type: float
+        self.bezierRes = bezierRes  # type: int
+        self.alpha = alpha  # type: int  # decay exponent for inter-flowline forces
 
-    def getNodesFromLineLayer(self, layer, threshold=0):
+    def getNodesFromLineLayer(self, layer):
         """
         Generates a list points containing all the unique nodes implied by the given line layer.
         :param layer: layer from which to get nodes
-        :param threshold: distance within which to consider two points to be the same
         :return: List(FlowMap.Point)
         """
         # first, loop through the features and add every start and end point
@@ -82,7 +86,7 @@ class FlowMap(object):
         toRemove = []
         for i in range(len(self.nodes)-2):
             for j in range(i+1, len(self.nodes)):
-                if self.nodes[i].distanceFrom(self.nodes[j]) <= threshold:
+                if self.nodes[i].distanceFrom(self.nodes[j]) <= self.snapThreshold:
                     # only add each duplicate once
                     if j not in toRemove:
                         toRemove.append(j)
@@ -93,11 +97,23 @@ class FlowMap(object):
         # return the remaining list
         return self.nodes
 
-    def loadFlowLinesFromLayer(self, lineLayer, threshold=0):
+    def calculateMapScale(self):
+        """
+        Calculates the mean distance between the nodes in the list and sets it as self.mapScale
+        Having this parameter correctly set helps prevent extremely large or small values in the force calculations
+        :return: mean distance between the nodes in nodeList
+        """
+        distList = []
+        for i in self.nodes:
+            for j in self.nodes:
+                if i != j:
+                    distList.append(i.distanceFrom(j))
+        self.mapScale = sum(distList) / len(distList)
+
+    def loadFlowLinesFromLayer(self, lineLayer):
         """
         Snaps line endpoints to nodes.
         :param lineLayer: line layer
-        :param threshold: threshold distance for snapping
         :type lineLayer: QgsVectorLayer
         :return: None
         """
@@ -107,29 +123,61 @@ class FlowMap(object):
             endPoint = Point(geom[-1].x(), geom[-1].y())
             startNode, endNode = None, None
             for node in self.nodes:
-                if startPoint.distanceFrom(node) <= threshold:
+                if startPoint.distanceFrom(node) <= self.snapThreshold:
                     startNode = node
-                if endPoint.distanceFrom(node) <= threshold:
+                if endPoint.distanceFrom(node) <= self.snapThreshold:
                     endNode = node
             flowline = FlowLine(startNode, endNode, fid=feature.id())
             self.flowlines.append(flowline)
             startNode.outflows.append(flowline)
             endNode.inflows.append(flowline)
 
+    def calculateInterFlowLineForces(self):
+        """
+        Calculates the flowline-against-flowline forces on each flowline.
+        See section 3.1.1 of Jenny et al
+        :return: list of forces in same order as self.flowlines
+        """
+        forces = []  # type: list[Vector]
+        for flowline in self.flowlines:
+            flPts = flowline.getIntermediateCurvePoints(self.bezierRes)
+            Fflows = Vector(0, 0)
+            n = 0
+            for pt in flPts:
+                sumdw, sumw = Vector(0, 0), 0
+                for other in self.flowlines:
+                    if flowline == other or (
+                            flowline.startNode == other.endNode and flowline.endNode == other.startNode):
+                        continue  # skip identical or mirror images of this flowline
+                    otherPts = other.getIntermediateCurvePoints(self.bezierRes)
+                    for otherPt in otherPts:
+                        dj = vectorFromPoints(otherPt, pt)
+                        dj.scale(1.0/self.mapScale)
+                        wj = math.pow(dj.getMagnitude(), -1*self.alpha)
+                        sumdw += dj*wj
+                        sumw += wj
+                        n += 1
+                Fp = sumdw.scale(1/sumw)
+                Fflows += Fp
+            Fflows.scale(float(self.mapScale)/n)
+            forces.append(Fflows)
+        return forces
 
-def run(iface, lineLayer, iterations, snapThreshold=0):
+
+def run(iface, lineLayer, iterations, snapThreshold=0, bezierRes=15):
     """
     Runs the algorithm
     :return:
     """
     # Load the nodes and flows into a data structure
-    fm = FlowMap()
-    fm.getNodesFromLineLayer(lineLayer, threshold=snapThreshold)
-    fm.loadFlowLinesFromLayer(lineLayer, threshold=snapThreshold)
+    fm = FlowMap(snapThreshold=snapThreshold, bezierRes=bezierRes)
+    fm.getNodesFromLineLayer(lineLayer)
+    fm.calculateMapScale()
+    fm.loadFlowLinesFromLayer(lineLayer)
     # Iterate
     for i in range(iterations):
         # Calculate flowline-against-flowline forces
-
+        flowline_forces = fm.calculateInterFlowLineForces()
         # Calculate node-against-flowline forces
 
         # Calculate anti-torsion forces

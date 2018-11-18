@@ -30,8 +30,8 @@ class QBezier(object):
         :return: Point on curve corresponding to t
         """
         # calculate the point using the quadratic bezier equation
-        x = ((1 - t) ** 2) * p0.x + 2 * (1 - t) * t * p1.x + t * t * p2.x
-        y = ((1 - t) ** 2) * p0.y + 2 * (1 - t) * t * p1.y + t * t * p2.y
+        x = ((1 - t) ** 2) * self.p0.x + 2 * (1 - t) * t * self.p1.x + t * t * self.p2.x
+        y = ((1 - t) ** 2) * self.p0.y + 2 * (1 - t) * t * self.p1.y + t * t * self.p2.y
         return Point(x, y)
 
     def getTangentVectorAt(self, t):
