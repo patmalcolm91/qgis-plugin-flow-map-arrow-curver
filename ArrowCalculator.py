@@ -129,20 +129,13 @@ def run(iface, lineLayer, nodeThreshold, nodeSnap, repulsion, stiffness, springL
         forces = [FlowMap.Vector(0, 0) for a in arcs]
         for a, arc in enumerate(arcs):
             displacementVector = FlowMap.vectorFromPoints(arc.midPoint, arc.controlPoint)  # displacement of the ctrl pt
-            # displacementVector.scale(displacementVector.getMagnitude())  # 'square' the displacement
             # calculate the spring force pulling the ctrl pt back to the midpt
-            if displacementVector.getMagnitude() > springLength:
-                # if we're farther out than the spring length, just use the displacement
-                force = deepcopy(displacementVector)
-                extension = displacementVector.getMagnitude() - springLength
-                force.setMagnitude(extension)
-            else:
-                # if we're within the spring length, the force should go backwards
-                force = deepcopy(displacementVector)
-                compression = springLength - displacementVector.getMagnitude()
-                force.setMagnitude(compression)
+            force = deepcopy(displacementVector)
+            extension = springLength - displacementVector.getMagnitude()  # accounts for both compression and tension
+            force.setMagnitude(extension)
             for node in nodes:
                 dist = FlowMap.vectorFromPoints(node, arc.controlPoint)
+                dist.scale(1/scale)
                 push = repulsion/(dist.getMagnitude()**2)
                 dist.setMagnitude(scale*push)  # apply push in direction of dist
                 force += dist
