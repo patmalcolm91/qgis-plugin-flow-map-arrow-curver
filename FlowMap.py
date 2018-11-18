@@ -6,7 +6,7 @@ import math
 from copy import deepcopy
 
 
-class Point:
+class Point(object):
     """
     A 2D point class.
     """
@@ -24,7 +24,7 @@ class Point:
         return math.sqrt((self.x - other.x)**2 + (self.y - other.y)**2)
 
 
-class Vector:
+class Vector(object):
     """
     A 2D vector class.
     """
@@ -123,7 +123,7 @@ class Vector:
         return uv
 
 
-class Arc:
+class Arc(object):
     """
     A 3-point arc class with methods to help interfacing with qgis geometry objects.
     """
