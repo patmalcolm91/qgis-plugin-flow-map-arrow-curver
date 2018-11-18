@@ -35,6 +35,20 @@ class QBezier(object):
         self.p1 = p1
         self.p2 = p2
 
+    def getStartTangentVector(self):
+        """
+        Returns a unit vector of the tangent at the start point. Direction is from start.
+        :return: start tangent vector
+        """
+        return vectorFromPoints(self.p0, self.p1).normalize()
+
+    def getEndTangentVector(self):
+        """
+        Returns a unit vector of the tangent at the end point. Direction is to end.
+        :return: end tangent vector
+        """
+        return vectorFromPoints(self.p1, self.p2).normalize()
+
     def getIntermediateCurvePoints(self, num=1):
         """
         Returns list of num points that lie along the curve
@@ -69,6 +83,7 @@ class QBezier(object):
 
 # n = Node(0, 4)
 # print(n)
-p0, p1, p2 = Point(10, 0), Point(0, 5), Point(0, 10)
+p0, p1, p2 = Point(10, 0), Point(0, -8), Point(0, 10)
 qb = QBezier(p0, p1, p2)
-print(qb.getWKT(5))
+print(qb.getWKT(9))
+print(qb.getStartTangentVector())
