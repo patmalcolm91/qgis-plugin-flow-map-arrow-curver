@@ -40,8 +40,8 @@ class QBezier(object):
         :param t: parameter value, between 0 and 1
         :return: unit tangent vector at t
         """
-        x = 2*(1 - t)*(p1.x - p0.x) + 2*t*(p2.x - p1.x)
-        y = 2*(1 - t)*(p1.y - p0.y) + 2*t*(p2.y - p1.y)
+        x = 2*(1 - t)*(self.p1.x - self.p0.x) + 2*t*(self.p2.x - self.p1.x)
+        y = 2*(1 - t)*(self.p1.y - self.p0.y) + 2*t*(self.p2.y - self.p1.y)
         return Vector(x, y).normalize()
 
     def getStartTangentVector(self):
