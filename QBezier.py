@@ -3,7 +3,6 @@ Contains objects and functions for using quadratic bezier curves.
 """
 
 from Geometry import Point, Vector, vectorFromPoints
-from qgis.core import *
 
 
 class QBezier(object):
