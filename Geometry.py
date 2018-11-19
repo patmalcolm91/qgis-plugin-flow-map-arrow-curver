@@ -6,7 +6,7 @@ import math
 from copy import deepcopy
 
 
-class Point:
+class Point(object):
     """
     A 2D point class.
     """
@@ -20,11 +20,15 @@ class Point:
     def __add__(self, other):
         return Point(self.x+other.x, self.y+other.y)
 
+    def __eq__(self, other):
+        result = self.x == other.x and self.y == other.y
+        return result
+
     def distanceFrom(self, other):
         return math.sqrt((self.x - other.x)**2 + (self.y - other.y)**2)
 
 
-class Vector:
+class Vector(object):
     """
     A 2D vector class.
     """
@@ -122,8 +126,17 @@ class Vector:
         uv.setMagnitude(dp/other.getMagnitude())
         return uv
 
+    def getPerpendicularVector(self):
+        """
+        Calculates the vector perpendicular to the vector.
+        :return: the perpendicular vector
+        """
+        result = Vector(self.y, self.x*-1)
+        result.setMagnitude(1)
+        return result
 
-class Arc:
+
+class Arc(object):
     """
     A 3-point arc class with methods to help interfacing with qgis geometry objects.
     """
@@ -153,9 +166,7 @@ class Arc:
         :return: the perpendicular vector
         """
         chord = vectorFromPoints(self.startPoint, self.endPoint)
-        result = Vector(chord.y, chord.x*-1)
-        result.setMagnitude(1)
-        return result
+        return chord.getPerpendicularVector()
 
 
 def vectorFromPoints(p1, p2):

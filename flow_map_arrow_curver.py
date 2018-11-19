@@ -27,7 +27,9 @@ import resources
 # Import the code for the dialog
 from flow_map_arrow_curver_dialog import FlowMapArrowCurverDialog
 import os.path
-import ArrowCalculator
+import JennyAlgorithm
+from qgis.core import *
+from qgis.gui import QgsMessageBar, QgsFieldExpressionWidget
 
 
 class FlowMapArrowCurver:
@@ -67,6 +69,13 @@ class FlowMapArrowCurver:
         self.toolbar = self.iface.addToolBar(u'FlowMapArrowCurver')
         self.toolbar.setObjectName(u'FlowMapArrowCurver')
 
+        # Custom properties
+        self.layers = self.iface.legendInterface().layers()
+        self.lineLayerList = []
+        self.lineLayerIndexMap = dict()
+        self.pointLayerList = []
+        self.pointLayerIndexMap = dict()
+
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
         """Get the translation for a string using Qt translation API.
@@ -82,18 +91,17 @@ class FlowMapArrowCurver:
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('FlowMapArrowCurver', message)
 
-
     def add_action(
-        self,
-        icon_path,
-        text,
-        callback,
-        enabled_flag=True,
-        add_to_menu=True,
-        add_to_toolbar=True,
-        status_tip=None,
-        whats_this=None,
-        parent=None):
+            self,
+            icon_path,
+            text,
+            callback,
+            enabled_flag=True,
+            add_to_menu=True,
+            add_to_toolbar=True,
+            status_tip=None,
+            whats_this=None,
+            parent=None):
         """Add a toolbar icon to the toolbar.
 
         :param icon_path: Path to the icon for this action. Can be a resource
@@ -169,7 +177,6 @@ class FlowMapArrowCurver:
             callback=self.run,
             parent=self.iface.mainWindow())
 
-
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
@@ -180,45 +187,124 @@ class FlowMapArrowCurver:
         # remove the toolbar
         del self.toolbar
 
+    def refreshLayerLists(self):
+        """
+        Re-generates the layer lists.
+        :return: None
+        """
+        self.layers = self.iface.legendInterface().layers()
+        self.lineLayerIndexMap = dict()
+        self.pointLayerIndexMap = dict()
+        self.lineLayerList = []  # holds the filtered layer names
+        self.pointLayerList = []  # holds the filtered layer names
+        for i, layer in enumerate(self.layers):
+            if layer.geometryType() == 0:  # 0: point, 1: line
+                self.pointLayerIndexMap[len(self.pointLayerList)] = i  # put the index pair in the dictionary
+                self.pointLayerList.append(layer.name())  # add the layer name to the list
+            if layer.geometryType() == 1:  # 0: point, 1: line
+                self.lineLayerIndexMap[len(self.lineLayerList)] = i  # put the index pair in the dictionary
+                self.lineLayerList.append(layer.name())  # add the layer name to the list
+
+
+    def lineLayerChanged(self, index):
+        """
+        Updates the field expression widget when the layer changes
+        :return: None
+        """
+        # Get the selected layer
+        try:
+            index = self.lineLayerIndexMap[index]
+            selectedLayer = self.layers[index]  # type: QgsVectorLayer
+        except KeyError:
+            selectedLayer = None
+        self.dlg.lineWidthExpressionWidget.setLayer(selectedLayer)
+        self.dlg.lineWidthExpressionWidget.setExpression("1")
+
+    def nodeLayerChanged(self, index):
+        """
+        Updates the field expression widget when the layer changes
+        :param index:
+        :return:
+        """
+        # Get the selected layer
+        try:
+            index = self.pointLayerIndexMap[index]
+            selectedLayer = self.layers[index]  # type: QgsVectorLayer
+        except KeyError:
+            selectedLayer = None
+        self.dlg.nodeRadiusExpressionWidget.setLayer(selectedLayer)
+        self.dlg.nodeRadiusExpressionWidget.setExpression("1")
+
+    def nodeLayerEnabledStateChanged(self, state):
+        """
+        callback function for when the node layer enabled checkbox changes state.
+        :param state:
+        :return:
+        """
+        if state == 0:
+            self.dlg.nodeLayerChooser.clear()
+            self.dlg.nodeLayerChooser.setEnabled(False)
+        elif state == 2:
+            self.dlg.nodeLayerChooser.addItems(self.pointLayerList)
+            self.dlg.nodeLayerChooser.setEnabled(True)
 
     def run(self):
         """Run method that performs all the real work"""
+        self.refreshLayerLists()
+        self.dlg.lineLayerChooser.currentIndexChanged.connect(self.lineLayerChanged)
+        self.dlg.nodeLayerEnabledBox.stateChanged.connect(self.nodeLayerEnabledStateChanged)
+        self.dlg.nodeLayerChooser.currentIndexChanged.connect(self.nodeLayerChanged)
         # Add line layers to the combo box
-        layers = self.iface.legendInterface().layers()
-        layer_list = []  # holds the filtered layer names
-        indexMap = dict()  # maps the index of the full layer list to the filtered list
-        for i, layer in enumerate(layers):
-            if layer.geometryType() == 1:  # 0: point, 1: line
-                indexMap[len(layer_list)] = i  # put the index pair in the dictionary
-                layer_list.append(layer.name())  # add the layer name to the drop-down
         self.dlg.lineLayerChooser.clear()
-        self.dlg.lineLayerChooser.addItems(layer_list)
+        self.dlg.lineLayerChooser.addItems(self.lineLayerList)
         # show the dialog
         self.dlg.show()
         # Run the dialog event loop
         result = self.dlg.exec_()
         # See if OK was pressed
         if result:
-            # Get the selected layer
-            selectedLayerIndex = indexMap[self.dlg.lineLayerChooser.currentIndex()]
-            selectedLayer = layers[selectedLayerIndex]
-            # Get the Node Threshold
+            # Get the selected layers
+            selectedLineLayerIndex = self.dlg.lineLayerChooser.currentIndex()
+            selectedNodeLayerIndex = self.dlg.nodeLayerChooser.currentIndex()
+            selectedLineLayer = self.layers[self.lineLayerIndexMap[selectedLineLayerIndex]]  # type: QgsVectorLayer
+            nodeLayerEnabled = self.dlg.nodeLayerEnabledBox.checkState() == 2
+            if nodeLayerEnabled:
+                selectedNodeLayer = self.layers[self.pointLayerIndexMap[selectedNodeLayerIndex]]  # type: QgsVectorLayer
+            else:
+                selectedNodeLayer = None
+            # Get the parameter values
+            lineWidthExpr = self.dlg.lineWidthExpressionWidget.asExpression()
+            nodeRadiiExpr = self.dlg.nodeRadiusExpressionWidget.asExpression()
             nodeThreshold = self.dlg.nodeThresholdBox.value()
-            # Get the snap nodes checkbox value
-            nodeSnap = self.dlg.snapNodesBox.checkState() == 2
-            # Get repulsion value
-            repulsion = self.dlg.repulsionSlider.value()
-            # Get the stiffness value
-            stiffness = self.dlg.stiffnessSlider.value()
-            # Get the spring length value
-            springLength = self.dlg.springLengthSlider.value()
-            # Get the step size value
-            stepSize = self.dlg.stepSizeSlider.value()
-            # Get the number of iterations
             nIter = self.dlg.iterationsBox.value()
-            # Get whether or not to output lines
-            outputPolylines = self.dlg.outputPolylineBox.checkState() == 2
-            # Run the algorithm
-            ArrowCalculator.run(iface=self.iface, lineLayer=selectedLayer, nodeThreshold=nodeThreshold,
-                                nodeSnap=nodeSnap, repulsion=repulsion, stiffness=stiffness, springLength=springLength,
-                                stepSize=stepSize, iterations=nIter, outputPolylines=outputPolylines)
+            w_flows = self.dlg.w_FlowsBox.value()
+            alpha = self.dlg.alphaBox.value()
+            w_nodes = self.dlg.w_NodesBox.value()
+            beta = self.dlg.betaBox.value()
+            w_antiTorsion = self.dlg.w_antiTorsionBox.value()
+            w_spring = self.dlg.w_springBox.value()
+            kShort = self.dlg.kShortBox.value()
+            kLong = self.dlg.kLongBox.value()
+            Cp = self.dlg.c_pBox.value()
+            w_angRes = self.dlg.w_angResBox.value()
+            K = self.dlg.kBox.value()
+            C = self.dlg.cBox.value()
+            bezierRes = self.dlg.bezierResBox.value()
+            constrainAspect = self.dlg.constrainAspectBox.value()
+            nodeBuffer = self.dlg.nodeBufferBox.value()
+
+            # Run the algorithm with the given parameters
+            try:
+                JennyAlgorithm.run(iface=self.iface, lineLayer=selectedLineLayer, nodeLayer=selectedNodeLayer,
+                                   nodeRadiiExpr=nodeRadiiExpr, lineWidthExpr=lineWidthExpr, iterations=nIter,
+                                   w_flows=w_flows, w_nodes=w_nodes, w_antiTorsion=w_antiTorsion, w_spring=w_spring,
+                                   w_angRes=w_angRes, snapThreshold=nodeThreshold, bezierRes=bezierRes, alpha=alpha,
+                                   beta=beta, kShort=kShort, kLong=kLong, Cp=Cp, K=K, C=C,
+                                   constraintRectAspect=constrainAspect, nodeBuffer=nodeBuffer)
+            except Exception as exception:
+                self.iface.messageBar().pushMessage("Flow Map Arrow Curver", "Operation Failed! An Error Occurred.",
+                                                    level=QgsMessageBar.WARNING, duration=5)
+                raise exception
+            else:
+                self.iface.messageBar().pushMessage("Flow Map Arrow Curver", "Operation Complete",
+                                                    level=QgsMessageBar.INFO, duration=3)

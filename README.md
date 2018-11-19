@@ -3,11 +3,10 @@
 This is an attempt to create a QGIS plugin which can be used to generate curved flow arrows for use in creating an OD
 flow map.
 
-The intent is to use an iterative force-based approach in which the middle point of the arc ("control point") is
-repelled from nodes, and attracted to the straight-line midpoint. The algorithm will be loosely based on that described
-in the paper [Automated layout of
-origin–destination flow maps: U.S. county-to-county migration 2009
-–2013](https://doi.org/10.1080/17445647.2017.1313788).
+The intent is to use an iterative force-based approach in which each flow is represented by a bezier curve. Each curve's
+control point has various forces acting on it which cause it to be repelled from other nodes and curves, and attracted 
+to the straight-line midpoint. The algorithm will be based on that described in the paper 
+[Force-directed layout of origin-destination flow maps](http://dx.doi.org/10.1080/13658816.2017.1307378) by Jenny, et al.
 
 ## Getting Started
 
