@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
+    <width>418</width>
     <height>435</height>
    </rect>
   </property>
@@ -21,635 +21,763 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="1">
-    <widget class="QDialogButtonBox" name="button_box">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+   <item row="3" column="0" colspan="2">
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
      </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0" colspan="2">
-    <widget class="QToolBox" name="settingsToolbox">
      <property name="currentIndex">
-      <number>5</number>
+      <number>0</number>
      </property>
-     <widget class="QWidget" name="flowForcesPage">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>0</y>
-        <width>382</width>
-        <height>130</height>
-       </rect>
-      </property>
-      <attribute name="label">
-       <string>Flowline Forces</string>
+     <widget class="QWidget" name="tabWidgetPage1" native="true">
+      <attribute name="title">
+       <string>Basic Settings</string>
       </attribute>
-      <widget class="QLabel" name="label">
+      <widget class="QLabel" name="label_15">
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>10</y>
-         <width>56</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Weight:</string>
-       </property>
-      </widget>
-      <widget class="QDoubleSpinBox" name="w_FlowsBox">
-       <property name="geometry">
-        <rect>
-         <x>60</x>
-         <y>0</y>
-         <width>62</width>
-         <height>33</height>
-        </rect>
-       </property>
-       <property name="maximum">
-        <double>10.000000000000000</double>
-       </property>
-       <property name="singleStep">
-        <double>0.100000000000000</double>
-       </property>
-       <property name="value">
-        <double>1.000000000000000</double>
-       </property>
-      </widget>
-      <widget class="QDoubleSpinBox" name="alphaBox">
-       <property name="geometry">
-        <rect>
-         <x>180</x>
-         <y>0</y>
-         <width>62</width>
-         <height>33</height>
-        </rect>
-       </property>
-       <property name="toolTip">
-        <string>Distance falloff exponent</string>
-       </property>
-       <property name="maximum">
-        <double>10.000000000000000</double>
-       </property>
-       <property name="value">
-        <double>4.000000000000000</double>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_4">
-       <property name="geometry">
-        <rect>
-         <x>140</x>
-         <y>10</y>
-         <width>56</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>alpha:</string>
-       </property>
-      </widget>
-     </widget>
-     <widget class="QWidget" name="nodeForcesPage">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>0</y>
-        <width>382</width>
-        <height>130</height>
-       </rect>
-      </property>
-      <attribute name="label">
-       <string>Node Forces</string>
-      </attribute>
-      <widget class="QDoubleSpinBox" name="w_NodesBox">
-       <property name="geometry">
-        <rect>
-         <x>50</x>
-         <y>0</y>
-         <width>62</width>
-         <height>33</height>
-        </rect>
-       </property>
-       <property name="maximum">
-        <double>5.000000000000000</double>
-       </property>
-       <property name="singleStep">
-        <double>0.100000000000000</double>
-       </property>
-       <property name="value">
-        <double>0.500000000000000</double>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_2">
-       <property name="geometry">
-        <rect>
-         <x>0</x>
-         <y>10</y>
-         <width>56</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Weight:</string>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_3">
-       <property name="geometry">
-        <rect>
-         <x>140</x>
-         <y>10</y>
-         <width>56</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>beta:</string>
-       </property>
-      </widget>
-      <widget class="QDoubleSpinBox" name="betaBox">
-       <property name="geometry">
-        <rect>
-         <x>180</x>
-         <y>0</y>
-         <width>62</width>
-         <height>33</height>
-        </rect>
-       </property>
-       <property name="toolTip">
-        <string>Distance falloff exponent</string>
-       </property>
-       <property name="maximum">
-        <double>10.000000000000000</double>
-       </property>
-       <property name="singleStep">
-        <double>1.000000000000000</double>
-       </property>
-       <property name="value">
-        <double>4.000000000000000</double>
-       </property>
-      </widget>
-     </widget>
-     <widget class="QWidget" name="antiTorsionPage">
-      <attribute name="label">
-       <string>Anti-Torsion Forces</string>
-      </attribute>
-      <widget class="QDoubleSpinBox" name="w_antiTorsionBox">
-       <property name="geometry">
-        <rect>
-         <x>60</x>
-         <y>0</y>
-         <width>62</width>
-         <height>33</height>
-        </rect>
-       </property>
-       <property name="maximum">
-        <double>10.000000000000000</double>
-       </property>
-       <property name="singleStep">
-        <double>0.100000000000000</double>
-       </property>
-       <property name="value">
-        <double>0.800000000000000</double>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_5">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>10</y>
-         <width>56</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Weight:</string>
-       </property>
-      </widget>
-     </widget>
-     <widget class="QWidget" name="springPage">
-      <attribute name="label">
-       <string>Spring Forces</string>
-      </attribute>
-      <widget class="QLabel" name="label_6">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>10</y>
-         <width>56</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Weight:</string>
-       </property>
-      </widget>
-      <widget class="QDoubleSpinBox" name="w_springBox">
-       <property name="geometry">
-        <rect>
-         <x>60</x>
-         <y>0</y>
-         <width>62</width>
-         <height>33</height>
-        </rect>
-       </property>
-       <property name="maximum">
-        <double>10.000000000000000</double>
-       </property>
-       <property name="singleStep">
-        <double>0.100000000000000</double>
-       </property>
-       <property name="value">
-        <double>1.000000000000000</double>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_7">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>50</y>
-         <width>56</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>K_short:</string>
-       </property>
-      </widget>
-      <widget class="QDoubleSpinBox" name="kShortBox">
-       <property name="geometry">
-        <rect>
-         <x>60</x>
-         <y>40</y>
-         <width>62</width>
-         <height>33</height>
-        </rect>
-       </property>
-       <property name="toolTip">
-        <string>Spring constant for short flows.</string>
-       </property>
-       <property name="maximum">
-        <double>10.000000000000000</double>
-       </property>
-       <property name="singleStep">
-        <double>0.100000000000000</double>
-       </property>
-       <property name="value">
-        <double>0.500000000000000</double>
-       </property>
-      </widget>
-      <widget class="QDoubleSpinBox" name="kLongBox">
-       <property name="geometry">
-        <rect>
-         <x>190</x>
-         <y>40</y>
-         <width>62</width>
-         <height>33</height>
-        </rect>
-       </property>
-       <property name="toolTip">
-        <string>Spring constant for long flows.</string>
-       </property>
-       <property name="maximum">
-        <double>10.000000000000000</double>
-       </property>
-       <property name="singleStep">
-        <double>0.050000000000000</double>
-       </property>
-       <property name="value">
-        <double>0.050000000000000</double>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_8">
-       <property name="geometry">
-        <rect>
-         <x>140</x>
-         <y>50</y>
-         <width>56</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>K_long:</string>
-       </property>
-      </widget>
-      <widget class="QDoubleSpinBox" name="c_pBox">
-       <property name="geometry">
-        <rect>
-         <x>300</x>
-         <y>40</y>
-         <width>62</width>
-         <height>33</height>
-        </rect>
-       </property>
-       <property name="toolTip">
-        <string>Spring constant adjustment factor for peripheral flows.</string>
-       </property>
-       <property name="maximum">
-        <double>10.000000000000000</double>
-       </property>
-       <property name="singleStep">
-        <double>0.500000000000000</double>
-       </property>
-       <property name="value">
-        <double>2.500000000000000</double>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_9">
-       <property name="geometry">
-        <rect>
-         <x>270</x>
-         <y>50</y>
-         <width>31</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>C_p:</string>
-       </property>
-      </widget>
-     </widget>
-     <widget class="QWidget" name="angularResolutionPage">
-      <attribute name="label">
-       <string>Angular Resolution Forces</string>
-      </attribute>
-      <widget class="QLabel" name="label_10">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>10</y>
-         <width>56</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Weight:</string>
-       </property>
-      </widget>
-      <widget class="QDoubleSpinBox" name="w_angResBox">
-       <property name="geometry">
-        <rect>
-         <x>60</x>
-         <y>0</y>
-         <width>62</width>
-         <height>33</height>
-        </rect>
-       </property>
-       <property name="maximum">
-        <double>10.000000000000000</double>
-       </property>
-       <property name="singleStep">
-        <double>0.250000000000000</double>
-       </property>
-       <property name="value">
-        <double>3.750000000000000</double>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_11">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>50</y>
-         <width>21</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>K:</string>
-       </property>
-      </widget>
-      <widget class="QDoubleSpinBox" name="kBox">
-       <property name="geometry">
-        <rect>
-         <x>30</x>
-         <y>40</y>
-         <width>62</width>
-         <height>33</height>
-        </rect>
-       </property>
-       <property name="toolTip">
-        <string>Angular falloff parameter.</string>
-       </property>
-       <property name="maximum">
-        <double>10.000000000000000</double>
-       </property>
-       <property name="value">
-        <double>4.000000000000000</double>
-       </property>
-      </widget>
-      <widget class="QDoubleSpinBox" name="cBox">
-       <property name="geometry">
-        <rect>
-         <x>130</x>
-         <y>40</y>
-         <width>62</width>
-         <height>33</height>
-        </rect>
-       </property>
-       <property name="toolTip">
-        <string>Angular resolution clamping parameter.</string>
-       </property>
-       <property name="maximum">
-        <double>10.000000000000000</double>
-       </property>
-       <property name="value">
-        <double>4.000000000000000</double>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_12">
-       <property name="geometry">
-        <rect>
-         <x>110</x>
-         <y>50</y>
-         <width>21</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>C:</string>
-       </property>
-      </widget>
-     </widget>
-     <widget class="QWidget" name="layoutSettingsPage">
-      <attribute name="label">
-       <string>Layout Settings</string>
-      </attribute>
-      <widget class="QLabel" name="label_13">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>10</y>
-         <width>111</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Bezier Resolution:</string>
-       </property>
-      </widget>
-      <widget class="QSpinBox" name="bezierResBox">
-       <property name="geometry">
-        <rect>
-         <x>120</x>
-         <y>0</y>
+         <y>20</y>
          <width>71</width>
-         <height>33</height>
-        </rect>
-       </property>
-       <property name="toolTip">
-        <string>Number of intermediate points to calculate for bezier curves.</string>
-       </property>
-       <property name="minimum">
-        <number>1</number>
-       </property>
-       <property name="value">
-        <number>15</number>
-       </property>
-      </widget>
-      <widget class="QLabel" name="nodeThresholdLabel">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>40</y>
-         <width>117</width>
-         <height>33</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Node Threshold:</string>
-       </property>
-      </widget>
-      <widget class="QDoubleSpinBox" name="nodeThresholdBox">
-       <property name="geometry">
-        <rect>
-         <x>120</x>
-         <y>40</y>
-         <width>71</width>
-         <height>33</height>
-        </rect>
-       </property>
-       <property name="toolTip">
-        <string>Threshold distance for considering two nodes the same.</string>
-       </property>
-       <property name="maximum">
-        <double>1000.000000000000000</double>
-       </property>
-       <property name="value">
-        <double>0.000000000000000</double>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_14">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>90</y>
-         <width>111</width>
          <height>17</height>
         </rect>
        </property>
        <property name="text">
-        <string>Maximum Aspect:</string>
+        <string>Line width:</string>
        </property>
       </widget>
-      <widget class="QDoubleSpinBox" name="aspectRatioBox">
+      <widget class="QgsFieldExpressionWidget" name="lineWidthExpressionWidget">
        <property name="geometry">
         <rect>
-         <x>120</x>
-         <y>80</y>
-         <width>71</width>
-         <height>33</height>
+         <x>90</x>
+         <y>10</y>
+         <width>291</width>
+         <height>38</height>
         </rect>
        </property>
        <property name="toolTip">
-        <string>Aspect ratio of the rectangle used to constrain each curve.</string>
+        <string>Value or expression giving the width (in map units) of the flowlines.</string>
        </property>
-       <property name="minimum">
-        <double>0.100000000000000</double>
-       </property>
-       <property name="maximum">
-        <double>10.000000000000000</double>
-       </property>
-       <property name="singleStep">
-        <double>0.100000000000000</double>
-       </property>
-       <property name="value">
-        <double>0.500000000000000</double>
+       <property name="expressionDialogTitle">
+        <string>Flowline Width (map units)</string>
        </property>
       </widget>
-      <widget class="QDoubleSpinBox" name="nodeBufferBox">
+      <widget class="QLabel" name="label_16">
        <property name="geometry">
         <rect>
-         <x>290</x>
-         <y>40</y>
+         <x>10</x>
+         <y>70</y>
          <width>81</width>
-         <height>33</height>
-        </rect>
-       </property>
-       <property name="toolTip">
-        <string>Threshold distance for considering two nodes the same.</string>
-       </property>
-       <property name="decimals">
-        <number>1</number>
-       </property>
-       <property name="maximum">
-        <double>1000000.000000000000000</double>
-       </property>
-       <property name="value">
-        <double>10.000000000000000</double>
-       </property>
-      </widget>
-      <widget class="QLabel" name="nodeThresholdLabel_2">
-       <property name="geometry">
-        <rect>
-         <x>210</x>
-         <y>40</y>
-         <width>81</width>
-         <height>33</height>
+         <height>17</height>
         </rect>
        </property>
        <property name="text">
-        <string>Node Buffer:</string>
+        <string>Node Radius:</string>
        </property>
       </widget>
+      <widget class="QgsFieldExpressionWidget" name="nodeRadiusExpressionWidget">
+       <property name="geometry">
+        <rect>
+         <x>90</x>
+         <y>60</y>
+         <width>291</width>
+         <height>38</height>
+        </rect>
+       </property>
+       <property name="toolTip">
+        <string>Value or expression giving the graphical radius (in map units) of the nodes.</string>
+       </property>
+       <property name="expressionDialogTitle">
+        <string>Node Radius (map units)</string>
+       </property>
+      </widget>
+      <zorder>settingsToolbox</zorder>
+      <zorder>label_15</zorder>
+      <zorder>lineWidthExpressionWidget</zorder>
+      <zorder>label_16</zorder>
+      <zorder>nodeRadiusExpressionWidget</zorder>
      </widget>
-     <widget class="QWidget" name="iterationSettingsPage">
-      <attribute name="label">
-       <string>Iteration Settings</string>
+     <widget class="QWidget" name="tabWidgetPage2" native="true">
+      <attribute name="title">
+       <string>Advanced Settings</string>
       </attribute>
-      <widget class="QLabel" name="iterationsLabel">
+      <widget class="QToolBox" name="settingsToolbox">
        <property name="geometry">
         <rect>
          <x>10</x>
          <y>0</y>
-         <width>71</width>
-         <height>33</height>
+         <width>381</width>
+         <height>301</height>
         </rect>
        </property>
-       <property name="text">
-        <string>Iterations:</string>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
        </property>
-      </widget>
-      <widget class="QSpinBox" name="iterationsBox">
-       <property name="geometry">
-        <rect>
-         <x>81</x>
-         <y>0</y>
-         <width>81</width>
-         <height>33</height>
-        </rect>
+       <property name="currentIndex">
+        <number>5</number>
        </property>
-       <property name="minimum">
-        <number>1</number>
-       </property>
-       <property name="maximum">
-        <number>1000</number>
-       </property>
-       <property name="value">
-        <number>100</number>
-       </property>
+       <widget class="QWidget" name="flowForcesPage">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>381</width>
+          <height>84</height>
+         </rect>
+        </property>
+        <attribute name="label">
+         <string>Flowline Forces</string>
+        </attribute>
+        <widget class="QLabel" name="label">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>10</y>
+           <width>56</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Weight:</string>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="w_FlowsBox">
+         <property name="geometry">
+          <rect>
+           <x>60</x>
+           <y>0</y>
+           <width>62</width>
+           <height>33</height>
+          </rect>
+         </property>
+         <property name="maximum">
+          <double>10.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.100000000000000</double>
+         </property>
+         <property name="value">
+          <double>1.000000000000000</double>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="alphaBox">
+         <property name="geometry">
+          <rect>
+           <x>180</x>
+           <y>0</y>
+           <width>62</width>
+           <height>33</height>
+          </rect>
+         </property>
+         <property name="toolTip">
+          <string>Distance falloff exponent</string>
+         </property>
+         <property name="maximum">
+          <double>10.000000000000000</double>
+         </property>
+         <property name="value">
+          <double>4.000000000000000</double>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_4">
+         <property name="geometry">
+          <rect>
+           <x>140</x>
+           <y>10</y>
+           <width>56</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>alpha:</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QWidget" name="nodeForcesPage">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>381</width>
+          <height>84</height>
+         </rect>
+        </property>
+        <attribute name="label">
+         <string>Node Forces</string>
+        </attribute>
+        <widget class="QDoubleSpinBox" name="w_NodesBox">
+         <property name="geometry">
+          <rect>
+           <x>50</x>
+           <y>0</y>
+           <width>62</width>
+           <height>33</height>
+          </rect>
+         </property>
+         <property name="maximum">
+          <double>5.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.100000000000000</double>
+         </property>
+         <property name="value">
+          <double>0.500000000000000</double>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_2">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>10</y>
+           <width>56</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Weight:</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_3">
+         <property name="geometry">
+          <rect>
+           <x>140</x>
+           <y>10</y>
+           <width>56</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>beta:</string>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="betaBox">
+         <property name="geometry">
+          <rect>
+           <x>180</x>
+           <y>0</y>
+           <width>62</width>
+           <height>33</height>
+          </rect>
+         </property>
+         <property name="toolTip">
+          <string>Distance falloff exponent</string>
+         </property>
+         <property name="maximum">
+          <double>10.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>1.000000000000000</double>
+         </property>
+         <property name="value">
+          <double>4.000000000000000</double>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QWidget" name="antiTorsionPage">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>381</width>
+          <height>84</height>
+         </rect>
+        </property>
+        <attribute name="label">
+         <string>Anti-Torsion Forces</string>
+        </attribute>
+        <widget class="QDoubleSpinBox" name="w_antiTorsionBox">
+         <property name="geometry">
+          <rect>
+           <x>60</x>
+           <y>0</y>
+           <width>62</width>
+           <height>33</height>
+          </rect>
+         </property>
+         <property name="maximum">
+          <double>10.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.100000000000000</double>
+         </property>
+         <property name="value">
+          <double>0.800000000000000</double>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_5">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>10</y>
+           <width>56</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Weight:</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QWidget" name="springPage">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>381</width>
+          <height>84</height>
+         </rect>
+        </property>
+        <attribute name="label">
+         <string>Spring Forces</string>
+        </attribute>
+        <widget class="QLabel" name="label_6">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>10</y>
+           <width>56</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Weight:</string>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="w_springBox">
+         <property name="geometry">
+          <rect>
+           <x>60</x>
+           <y>0</y>
+           <width>62</width>
+           <height>33</height>
+          </rect>
+         </property>
+         <property name="maximum">
+          <double>10.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.100000000000000</double>
+         </property>
+         <property name="value">
+          <double>1.000000000000000</double>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_7">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>50</y>
+           <width>56</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>K_short:</string>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="kShortBox">
+         <property name="geometry">
+          <rect>
+           <x>60</x>
+           <y>40</y>
+           <width>62</width>
+           <height>33</height>
+          </rect>
+         </property>
+         <property name="toolTip">
+          <string>Spring constant for short flows.</string>
+         </property>
+         <property name="maximum">
+          <double>10.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.100000000000000</double>
+         </property>
+         <property name="value">
+          <double>0.500000000000000</double>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="kLongBox">
+         <property name="geometry">
+          <rect>
+           <x>190</x>
+           <y>40</y>
+           <width>62</width>
+           <height>33</height>
+          </rect>
+         </property>
+         <property name="toolTip">
+          <string>Spring constant for long flows.</string>
+         </property>
+         <property name="maximum">
+          <double>10.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.050000000000000</double>
+         </property>
+         <property name="value">
+          <double>0.050000000000000</double>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_8">
+         <property name="geometry">
+          <rect>
+           <x>140</x>
+           <y>50</y>
+           <width>56</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>K_long:</string>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="c_pBox">
+         <property name="geometry">
+          <rect>
+           <x>300</x>
+           <y>40</y>
+           <width>62</width>
+           <height>33</height>
+          </rect>
+         </property>
+         <property name="toolTip">
+          <string>Spring constant adjustment factor for peripheral flows.</string>
+         </property>
+         <property name="maximum">
+          <double>10.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.500000000000000</double>
+         </property>
+         <property name="value">
+          <double>2.500000000000000</double>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_9">
+         <property name="geometry">
+          <rect>
+           <x>270</x>
+           <y>50</y>
+           <width>31</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>C_p:</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QWidget" name="angularResolutionPage">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>381</width>
+          <height>84</height>
+         </rect>
+        </property>
+        <attribute name="label">
+         <string>Angular Resolution Forces</string>
+        </attribute>
+        <widget class="QLabel" name="label_10">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>10</y>
+           <width>56</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Weight:</string>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="w_angResBox">
+         <property name="geometry">
+          <rect>
+           <x>60</x>
+           <y>0</y>
+           <width>62</width>
+           <height>33</height>
+          </rect>
+         </property>
+         <property name="maximum">
+          <double>10.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.250000000000000</double>
+         </property>
+         <property name="value">
+          <double>3.750000000000000</double>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_11">
+         <property name="geometry">
+          <rect>
+           <x>40</x>
+           <y>50</y>
+           <width>21</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>K:</string>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="kBox">
+         <property name="geometry">
+          <rect>
+           <x>60</x>
+           <y>40</y>
+           <width>62</width>
+           <height>33</height>
+          </rect>
+         </property>
+         <property name="toolTip">
+          <string>Angular falloff parameter.</string>
+         </property>
+         <property name="maximum">
+          <double>10.000000000000000</double>
+         </property>
+         <property name="value">
+          <double>4.000000000000000</double>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="cBox">
+         <property name="geometry">
+          <rect>
+           <x>160</x>
+           <y>40</y>
+           <width>62</width>
+           <height>33</height>
+          </rect>
+         </property>
+         <property name="toolTip">
+          <string>Angular resolution clamping parameter.</string>
+         </property>
+         <property name="maximum">
+          <double>10.000000000000000</double>
+         </property>
+         <property name="value">
+          <double>4.000000000000000</double>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_12">
+         <property name="geometry">
+          <rect>
+           <x>140</x>
+           <y>50</y>
+           <width>21</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>C:</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QWidget" name="layoutSettingsPage">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>381</width>
+          <height>84</height>
+         </rect>
+        </property>
+        <attribute name="label">
+         <string>Layout Settings</string>
+        </attribute>
+        <widget class="QLabel" name="label_13">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>10</y>
+           <width>111</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Bezier Resolution:</string>
+         </property>
+        </widget>
+        <widget class="QSpinBox" name="bezierResBox">
+         <property name="geometry">
+          <rect>
+           <x>120</x>
+           <y>0</y>
+           <width>71</width>
+           <height>33</height>
+          </rect>
+         </property>
+         <property name="toolTip">
+          <string>Number of intermediate points to calculate for bezier curves.</string>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="value">
+          <number>15</number>
+         </property>
+        </widget>
+        <widget class="QLabel" name="nodeThresholdLabel">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>40</y>
+           <width>117</width>
+           <height>33</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Node Threshold:</string>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="nodeThresholdBox">
+         <property name="geometry">
+          <rect>
+           <x>120</x>
+           <y>40</y>
+           <width>71</width>
+           <height>33</height>
+          </rect>
+         </property>
+         <property name="toolTip">
+          <string>Threshold distance for considering two nodes the same.</string>
+         </property>
+         <property name="maximum">
+          <double>1000.000000000000000</double>
+         </property>
+         <property name="value">
+          <double>0.000000000000000</double>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_14">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>90</y>
+           <width>111</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Maximum Aspect:</string>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="aspectRatioBox">
+         <property name="geometry">
+          <rect>
+           <x>120</x>
+           <y>80</y>
+           <width>71</width>
+           <height>33</height>
+          </rect>
+         </property>
+         <property name="toolTip">
+          <string>Aspect ratio of the rectangle used to constrain each curve.</string>
+         </property>
+         <property name="minimum">
+          <double>0.100000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>10.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.100000000000000</double>
+         </property>
+         <property name="value">
+          <double>0.500000000000000</double>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="nodeBufferBox">
+         <property name="geometry">
+          <rect>
+           <x>290</x>
+           <y>40</y>
+           <width>81</width>
+           <height>33</height>
+          </rect>
+         </property>
+         <property name="toolTip">
+          <string>Threshold distance for considering two nodes the same.</string>
+         </property>
+         <property name="decimals">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <double>1000000.000000000000000</double>
+         </property>
+         <property name="value">
+          <double>1.000000000000000</double>
+         </property>
+        </widget>
+        <widget class="QLabel" name="nodeThresholdLabel_2">
+         <property name="geometry">
+          <rect>
+           <x>210</x>
+           <y>40</y>
+           <width>81</width>
+           <height>33</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Node Buffer:</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QWidget" name="iterationSettingsPage">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>381</width>
+          <height>84</height>
+         </rect>
+        </property>
+        <attribute name="label">
+         <string>Iteration Settings</string>
+        </attribute>
+        <widget class="QLabel" name="iterationsLabel">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>0</y>
+           <width>71</width>
+           <height>33</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Iterations:</string>
+         </property>
+        </widget>
+        <widget class="QSpinBox" name="iterationsBox">
+         <property name="geometry">
+          <rect>
+           <x>81</x>
+           <y>0</y>
+           <width>81</width>
+           <height>33</height>
+          </rect>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>1000</number>
+         </property>
+         <property name="value">
+          <number>100</number>
+         </property>
+        </widget>
+       </widget>
       </widget>
      </widget>
     </widget>
@@ -661,8 +789,39 @@
      </property>
     </widget>
    </item>
+   <item row="5" column="1">
+    <widget class="QDialogButtonBox" name="button_box">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QComboBox" name="nodeLayerChooser">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QCheckBox" name="checkBox">
+     <property name="text">
+      <string>Node Layer:</string>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QgsFieldExpressionWidget</class>
+   <extends>QWidget</extends>
+   <header>qgsfieldexpressionwidget.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>

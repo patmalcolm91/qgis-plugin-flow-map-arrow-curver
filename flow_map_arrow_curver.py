@@ -29,7 +29,7 @@ from flow_map_arrow_curver_dialog import FlowMapArrowCurverDialog
 import os.path
 import JennyAlgorithm
 from qgis.core import *
-from qgis.gui import QgsMessageBar
+from qgis.gui import QgsMessageBar, QgsFieldExpressionWidget
 
 
 class FlowMapArrowCurver:
@@ -68,6 +68,13 @@ class FlowMapArrowCurver:
         # TODO: We are going to let the user set this up in a future iteration
         self.toolbar = self.iface.addToolBar(u'FlowMapArrowCurver')
         self.toolbar.setObjectName(u'FlowMapArrowCurver')
+
+        # Custom properties
+        self.layers = self.iface.legendInterface().layers()
+        self.lineLayerList = []
+        self.lineLayerIndexMap = dict()
+        self.pointLayerList = []
+        self.pointLayerIndexMap = dict()
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -180,28 +187,48 @@ class FlowMapArrowCurver:
         # remove the toolbar
         del self.toolbar
 
+    def refreshLayerLists(self):
+        """
+        Re-generates the layer lists.
+        :return: None
+        """
+        self.layers = self.iface.legendInterface().layers()
+        self.lineLayerIndexMap = dict()
+        self.pointLayerIndexMap = dict()
+        self.lineLayerList = []  # holds the filtered layer names
+        for i, layer in enumerate(self.layers):
+            if layer.geometryType() == 0:  # 0: point, 1: line
+                self.pointLayerIndexMap[len(self.pointLayerList)] = i  # put the index pair in the dictionary
+                self.pointLayerList.append(layer.name())  # add the layer name to the list
+            if layer.geometryType() == 1:  # 0: point, 1: line
+                self.lineLayerIndexMap[len(self.lineLayerList)] = i  # put the index pair in the dictionary
+                self.lineLayerList.append(layer.name())  # add the layer name to the list
+
+
+    def updateFieldExpressionWidgets(self, index):
+        """
+        Updates the field expression widgets when the layer changes
+        :return: None
+        """
+        # Get the selected layer
+        # index = self.lineLayerIndexMap[self.dlg.lineLayerChooser.currentIndex()]
+        selectedLayer = self.layers[index]  # type: QgsVectorLayer
+        self.dlg.lineWidthExpressionWidget.setLayer(selectedLayer)
+        self.dlg.lineWidthExpressionWidget.setExpression("1")
 
     def run(self):
         """Run method that performs all the real work"""
+        self.refreshLayerLists()
+        self.dlg.lineLayerChooser.currentIndexChanged.connect(self.updateFieldExpressionWidgets)
         # Add line layers to the combo box
-        layers = self.iface.legendInterface().layers()
-        layer_list = []  # holds the filtered layer names
-        indexMap = dict()  # maps the index of the full layer list to the filtered list
-        for i, layer in enumerate(layers):
-            if layer.geometryType() == 1:  # 0: point, 1: line
-                indexMap[len(layer_list)] = i  # put the index pair in the dictionary
-                layer_list.append(layer.name())  # add the layer name to the drop-down
         self.dlg.lineLayerChooser.clear()
-        self.dlg.lineLayerChooser.addItems(layer_list)
+        self.dlg.lineLayerChooser.addItems(self.lineLayerList)
         # show the dialog
         self.dlg.show()
         # Run the dialog event loop
         result = self.dlg.exec_()
         # See if OK was pressed
         if result:
-            # Get the selected layer
-            selectedLayerIndex = indexMap[self.dlg.lineLayerChooser.currentIndex()]
-            selectedLayer = layers[selectedLayerIndex]  # type: QgsVectorLayer
             # Get the Node Threshold
             nodeThreshold = self.dlg.nodeThresholdBox.value()
             nIter = self.dlg.iterationsBox.value()
