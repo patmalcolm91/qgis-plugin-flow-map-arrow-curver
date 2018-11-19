@@ -216,10 +216,24 @@ class FlowMapArrowCurver:
         self.dlg.lineWidthExpressionWidget.setLayer(selectedLayer)
         self.dlg.lineWidthExpressionWidget.setExpression("1")
 
+    def nodeLayerEnabledStateChanged(self, state):
+        """
+        callback function for when the node layer enabled checkbox changes state.
+        :param state:
+        :return:
+        """
+        if state == 0:
+            self.dlg.nodeLayerChooser.clear()
+            self.dlg.nodeLayerChooser.setEnabled(False)
+        elif state == 2:
+            self.dlg.nodeLayerChooser.addItems(self.pointLayerList)
+            self.dlg.nodeLayerChooser.setEnabled(True)
+
     def run(self):
         """Run method that performs all the real work"""
         self.refreshLayerLists()
         self.dlg.lineLayerChooser.currentIndexChanged.connect(self.updateFieldExpressionWidgets)
+        self.dlg.nodeLayerEnabledBox.stateChanged.connect(self.nodeLayerEnabledStateChanged)
         # Add line layers to the combo box
         self.dlg.lineLayerChooser.clear()
         self.dlg.lineLayerChooser.addItems(self.lineLayerList)
@@ -229,6 +243,7 @@ class FlowMapArrowCurver:
         result = self.dlg.exec_()
         # See if OK was pressed
         if result:
+            selectedLayer = self.layers[self.lineLayerList.currentIndex]  # type: QgsVectorLayer
             # Get the Node Threshold
             nodeThreshold = self.dlg.nodeThresholdBox.value()
             nIter = self.dlg.iterationsBox.value()
