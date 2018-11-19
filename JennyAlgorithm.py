@@ -90,7 +90,9 @@ class FlowMap(object):
                  snapThreshold=0, bezierRes=15, alpha=4, beta=4, kShort=0.5, kLong=0.05, Cp=2.5, K=4, C=4,
                  constraintRectAspect=0.5):
         self.nodes = []  # type: list[Node]
+        self.nodeRadii = []  # type: list[float]
         self.flowlines = []  # type: list[FlowLine]
+        self.flowlineWidths = []  # type: list[float]
         self.mapScale = 1  # type: int  # order of magnitude of the map. Used to scale values to avoid extreme values
         self.w_flows = w_flows  # type: float
         self.w_nodes = w_nodes  # type: float
@@ -125,8 +127,6 @@ class FlowMap(object):
                 layer.dataProvider().changeGeometryValues({feature.id(): newGeom})
         layer.commitChanges()
 
-
-
     def getNodesFromLineLayer(self, layer):
         """
         Generates a list points containing all the unique nodes implied by the given line layer.
@@ -157,6 +157,50 @@ class FlowMap(object):
             self.nodes.pop(r)
         # return the remaining list
         return self.nodes
+
+    def getNodeRadiiFromLayer(self, nodeLayer, expression):
+        """
+        Reads a point layer and evaluates an expression to generate a list of graphical node radii.
+        :param nodeLayer: point layer containing nodes.
+        :param expression: expression to be evaluated to get the radii.
+        :return: None
+        :type nodeLayer: QgsVectorLayer
+        :type expression: QString
+        """
+        self.nodeRadii = []
+        context = QgsExpressionContext()
+        scope = QgsExpressionContextScope()
+        context.appendScope(scope)
+        for feat in nodeLayer.getFeatures():
+            scope.setFeature(feat)
+            exp = QgsExpression(expression)
+            val = exp.evaluate(context)
+            if val is None:
+                self.nodeRadii.append(0)
+            else:
+                self.nodeRadii.append(val)
+
+    def getLineWidthFromLayer(self, lineLayer, expression):
+        """
+        Reads a point layer and evaluates an expression to generate a list of graphical node radii.
+        :param nodeLayer: point layer containing nodes.
+        :param expression: expression to be evaluated to get the radii.
+        :return: None
+        :type nodeLayer: QgsVectorLayer
+        :type expression: QString
+        """
+        self.flowlineWidths = []
+        context = QgsExpressionContext()
+        scope = QgsExpressionContextScope()
+        context.appendScope(scope)
+        for feat in lineLayer.getFeatures():
+            scope.setFeature(feat)
+            exp = QgsExpression(expression)
+            val = exp.evaluate(context)
+            if val is None:
+                self.flowlineWidths.append(0)
+            else:
+                self.flowlineWidths.append(val)
 
     def calculateMapScale(self):
         """
@@ -385,7 +429,7 @@ class FlowMap(object):
                 flowline.cacheIntermediatePoints(self.bezierRes)
 
 
-def run(iface, lineLayer, iterations, snapThreshold=0, bezierRes=15):
+def run(iface, lineLayer, nodeLayer, nodeRadiiExpr, lineWidthExpr, iterations, snapThreshold=0, bezierRes=15):
     """
     Runs the algorithm
     :return:
@@ -393,6 +437,11 @@ def run(iface, lineLayer, iterations, snapThreshold=0, bezierRes=15):
     # Load the nodes and flows into a data structure
     fm = FlowMap(snapThreshold=snapThreshold, bezierRes=bezierRes)
     fm.getNodesFromLineLayer(lineLayer)
+    if nodeLayer is not None:
+        fm.getNodeRadiiFromLayer(nodeLayer, nodeRadiiExpr)
+    else:
+        fm.nodeRadii = [0 for node in fm.nodes]
+    fm.getLineWidthFromLayer(lineLayer, lineWidthExpr)
     fm.calculateMapScale()
     fm.loadFlowLinesFromLayer(lineLayer)
     # Iterate

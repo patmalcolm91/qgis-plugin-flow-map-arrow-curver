@@ -196,6 +196,7 @@ class FlowMapArrowCurver:
         self.lineLayerIndexMap = dict()
         self.pointLayerIndexMap = dict()
         self.lineLayerList = []  # holds the filtered layer names
+        self.pointLayerList = []  # holds the filtered layer names
         for i, layer in enumerate(self.layers):
             if layer.geometryType() == 0:  # 0: point, 1: line
                 self.pointLayerIndexMap[len(self.pointLayerList)] = i  # put the index pair in the dictionary
@@ -211,10 +212,10 @@ class FlowMapArrowCurver:
         :return: None
         """
         # Get the selected layer
-        if index != -1:
+        try:
             index = self.lineLayerIndexMap[index]
             selectedLayer = self.layers[index]  # type: QgsVectorLayer
-        else:
+        except KeyError:
             selectedLayer = None
         self.dlg.lineWidthExpressionWidget.setLayer(selectedLayer)
         self.dlg.lineWidthExpressionWidget.setExpression("1")
@@ -226,10 +227,10 @@ class FlowMapArrowCurver:
         :return:
         """
         # Get the selected layer
-        if index != -1:
+        try:
             index = self.pointLayerIndexMap[index]
             selectedLayer = self.layers[index]  # type: QgsVectorLayer
-        else:
+        except KeyError:
             selectedLayer = None
         self.dlg.nodeRadiusExpressionWidget.setLayer(selectedLayer)
         self.dlg.nodeRadiusExpressionWidget.setExpression("1")
@@ -262,13 +263,26 @@ class FlowMapArrowCurver:
         result = self.dlg.exec_()
         # See if OK was pressed
         if result:
-            selectedLayer = self.layers[self.lineLayerList.currentIndex]  # type: QgsVectorLayer
-            # Get the Node Threshold
+            # Get the selected layers
+            selectedLineLayerIndex = self.dlg.lineLayerChooser.currentIndex()
+            selectedNodeLayerIndex = self.dlg.nodeLayerChooser.currentIndex()
+            selectedLineLayer = self.layers[self.lineLayerIndexMap[selectedLineLayerIndex]]  # type: QgsVectorLayer
+            nodeLayerEnabled = self.dlg.nodeLayerEnabledBox.checkState() == 2
+            if nodeLayerEnabled:
+                selectedNodeLayer = self.layers[self.pointLayerIndexMap[selectedNodeLayerIndex]]  # type: QgsVectorLayer
+            else:
+                selectedNodeLayer = None
+            # Get the parameter values
+            lineWidthExpr = self.dlg.lineWidthExpressionWidget.asExpression()
+            nodeRadiiExpr = self.dlg.nodeRadiusExpressionWidget.asExpression()
             nodeThreshold = self.dlg.nodeThresholdBox.value()
             nIter = self.dlg.iterationsBox.value()
+
+            # Run the algorithm with the given parameters
             try:
-                JennyAlgorithm.run(iface=self.iface, snapThreshold=nodeThreshold, lineLayer=selectedLayer,
-                                   iterations=nIter)
+                JennyAlgorithm.run(iface=self.iface, snapThreshold=nodeThreshold, lineLayer=selectedLineLayer,
+                                   nodeLayer=selectedNodeLayer, nodeRadiiExpr=nodeRadiiExpr,
+                                   lineWidthExpr=lineWidthExpr, iterations=nIter)
             except Exception as exception:
                 self.iface.messageBar().pushMessage("Flow Map Arrow Curver", "Operation Failed! An Error Occurred.",
                                                     level=QgsMessageBar.WARNING, duration=5)
