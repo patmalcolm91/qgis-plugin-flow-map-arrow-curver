@@ -126,6 +126,15 @@ class Vector(object):
         uv.setMagnitude(dp/other.getMagnitude())
         return uv
 
+    def getPerpendicularVector(self):
+        """
+        Calculates the vector perpendicular to the vector.
+        :return: the perpendicular vector
+        """
+        result = Vector(self.y, self.x*-1)
+        result.setMagnitude(1)
+        return result
+
 
 class Arc(object):
     """
@@ -157,9 +166,7 @@ class Arc(object):
         :return: the perpendicular vector
         """
         chord = vectorFromPoints(self.startPoint, self.endPoint)
-        result = Vector(chord.y, chord.x*-1)
-        result.setMagnitude(1)
-        return result
+        return chord.getPerpendicularVector()
 
 
 def vectorFromPoints(p1, p2):

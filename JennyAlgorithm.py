@@ -87,7 +87,7 @@ class FlowMap(object):
     An object which holds a set of Nodes and FlowLines along with various parameters.
     """
     def __init__(self, w_flows=1, w_nodes=0.5, w_antiTorsion=0.8, w_spring=1, w_angRes=3.75,
-                 snapThreshold=0, bezierRes=15, alpha=4, beta=4, kShort=0.5, kLong=0.05, Cp=2.5,
+                 snapThreshold=0, bezierRes=15, alpha=4, beta=4, kShort=0.5, kLong=0.05, Cp=2.5, K=4, C=4,
                  constraintRectAspect=0.5):
         self.nodes = []  # type: list[Node]
         self.flowlines = []  # type: list[FlowLine]
@@ -104,6 +104,8 @@ class FlowMap(object):
         self.kShort = kShort  # type: float  # spring constant for short flowlines
         self.kLong = kLong  # type: float  # spring constant for long flowlines
         self.Cp = Cp  # type: float  # peripheral flow correction factor for spring constants
+        self.K = K  # type: float  # angular resolution repulsion factor
+        self.C = C  # type: float  # angular resolution clamping factor
         self.constraintRectAspect = constraintRectAspect
 
     def updateGeometryOnLayer(self, layer):
@@ -297,6 +299,52 @@ class FlowMap(object):
             forces.append(force)
         return forces
 
+    def calculateAngleResForces(self):
+        """
+        Calculates the angular-resolution forces. This helps to increase angular resolution of flows at nodes.
+        See Section 3.1.5 of Jenny et al
+        :return: list of forces in the same order as self.flowlines
+        """
+        forces = []
+        for flowline in self.flowlines:
+            # Calculate start node forces
+            Fs = 0
+            startTan = vectorFromPoints(flowline.p0, flowline.p1)
+            deltaStart = startTan.getDirection()
+            ds = startTan.getMagnitude()
+            sVectors = [o.getStartTangentVector() for o in flowline.startNode.outflows] +\
+                       [i.getEndTangentVector().scale(-1) for i in flowline.startNode.inflows]
+            for other in sVectors:
+                if other == flowline:
+                    continue  # skip this flowline
+                deltai = deltaStart - other.getDirection()
+                sign = 1 if deltai >= 0 else -1
+                Fs += sign*math.exp(-1*self.K*(deltai**2))
+            Fs *= ds
+            # Calculate end node forces
+            Fe = 0
+            endTan = vectorFromPoints(flowline.p1, flowline.p2)
+            deltaEnd = deepcopy(endTan).scale(-1).getDirection()
+            de = endTan.getMagnitude()
+            eVectors = [o.getStartTangentVector() for o in flowline.endNode.outflows] +\
+                       [i.getEndTangentVector().scale(-1) for i in flowline.endNode.inflows]
+            for other in eVectors:
+                if other == flowline:
+                    continue  # skip this flowline
+                deltai = deltaEnd - other.getDirection()
+                sign = 1 if deltai >= 0 else -1
+                Fe += sign*math.exp(-1*self.K*(deltai**2))
+            Fe *= de
+            # Calculate resultant force vector
+            FsVector = startTan.getPerpendicularVector().scale(-1*Fs)
+            FeVector = endTan.getPerpendicularVector().scale(Fe)
+            Fangres = FsVector + FeVector
+            clampingValue = min(ds, de)/self.C
+            if Fangres.getMagnitude() > clampingValue:
+                Fangres.setMagnitude(clampingValue)
+            forces.append(Fangres)
+        return forces
+
     def applyForces(self, forces):
         """
         Applies forces to the control points.
@@ -359,7 +407,7 @@ def run(iface, lineLayer, iterations, snapThreshold=0, bezierRes=15):
         # Calculate spring forces
         spring_forces = fm.calculateSpringForces(flowline_forces, Fs)
         # Calculate angular-resolution-of-flowlines-around-nodes forces
-        angRes_forces = [Vector(0, 0) for f in fm.flowlines]  # TODO: implement this function
+        angRes_forces = fm.calculateAngleResForces()
         # Apply forces to arc control points
         resultantForces = []
         for i in range(len(fm.flowlines)):
