@@ -804,10 +804,19 @@
      <property name="enabled">
       <bool>false</bool>
      </property>
+     <property name="toolTip">
+      <string>Only used for graphical properties. Nodes are not actually generated from this layer.</string>
+     </property>
     </widget>
    </item>
    <item row="1" column="0">
     <widget class="QCheckBox" name="nodeLayerEnabledBox">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="toolTip">
+      <string>Whether to use a point layer to calculate whether flowlines overlap nodes.</string>
+     </property>
      <property name="text">
       <string>Node Layer:</string>
      </property>

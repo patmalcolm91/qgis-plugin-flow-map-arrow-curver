@@ -205,16 +205,34 @@ class FlowMapArrowCurver:
                 self.lineLayerList.append(layer.name())  # add the layer name to the list
 
 
-    def updateFieldExpressionWidgets(self, index):
+    def lineLayerChanged(self, index):
         """
-        Updates the field expression widgets when the layer changes
+        Updates the field expression widget when the layer changes
         :return: None
         """
         # Get the selected layer
-        # index = self.lineLayerIndexMap[self.dlg.lineLayerChooser.currentIndex()]
-        selectedLayer = self.layers[index]  # type: QgsVectorLayer
+        if index != -1:
+            index = self.lineLayerIndexMap[index]
+            selectedLayer = self.layers[index]  # type: QgsVectorLayer
+        else:
+            selectedLayer = None
         self.dlg.lineWidthExpressionWidget.setLayer(selectedLayer)
         self.dlg.lineWidthExpressionWidget.setExpression("1")
+
+    def nodeLayerChanged(self, index):
+        """
+        Updates the field expression widget when the layer changes
+        :param index:
+        :return:
+        """
+        # Get the selected layer
+        if index != -1:
+            index = self.pointLayerIndexMap[index]
+            selectedLayer = self.layers[index]  # type: QgsVectorLayer
+        else:
+            selectedLayer = None
+        self.dlg.nodeRadiusExpressionWidget.setLayer(selectedLayer)
+        self.dlg.nodeRadiusExpressionWidget.setExpression("1")
 
     def nodeLayerEnabledStateChanged(self, state):
         """
@@ -232,8 +250,9 @@ class FlowMapArrowCurver:
     def run(self):
         """Run method that performs all the real work"""
         self.refreshLayerLists()
-        self.dlg.lineLayerChooser.currentIndexChanged.connect(self.updateFieldExpressionWidgets)
+        self.dlg.lineLayerChooser.currentIndexChanged.connect(self.lineLayerChanged)
         self.dlg.nodeLayerEnabledBox.stateChanged.connect(self.nodeLayerEnabledStateChanged)
+        self.dlg.nodeLayerChooser.currentIndexChanged.connect(self.nodeLayerChanged)
         # Add line layers to the combo box
         self.dlg.lineLayerChooser.clear()
         self.dlg.lineLayerChooser.addItems(self.lineLayerList)
