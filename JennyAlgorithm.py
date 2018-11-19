@@ -87,7 +87,8 @@ class FlowMap(object):
     An object which holds a set of Nodes and FlowLines along with various parameters.
     """
     def __init__(self, w_flows=1, w_nodes=0.5, w_antiTorsion=0.8, w_spring=1, w_angRes=3.75,
-                 snapThreshold=0, bezierRes=15, alpha=4, beta=4, kShort=0.5, kLong=0.05, Cp=2.5):
+                 snapThreshold=0, bezierRes=15, alpha=4, beta=4, kShort=0.5, kLong=0.05, Cp=2.5,
+                 constraintRectAspect=0.5):
         self.nodes = []  # type: list[Node]
         self.flowlines = []  # type: list[FlowLine]
         self.mapScale = 1  # type: int  # order of magnitude of the map. Used to scale values to avoid extreme values
@@ -103,6 +104,7 @@ class FlowMap(object):
         self.kShort = kShort  # type: float  # spring constant for short flowlines
         self.kLong = kLong  # type: float  # spring constant for long flowlines
         self.Cp = Cp  # type: float  # peripheral flow correction factor for spring constants
+        self.constraintRectAspect = constraintRectAspect
 
     def updateGeometryOnLayer(self, layer):
         """
@@ -306,6 +308,35 @@ class FlowMap(object):
             self.flowlines[i].p1 += force
             self.flowlines[i].cacheIntermediatePoints(self.bezierRes)
 
+    def applyRectangleConstraints(self):
+        """
+        Constrains the control point to a rectangle along the arc's chord. The aspect of the rectangleis set using the
+         parameter self.constraintRectAspect.
+        See Section 3.2.1 of Jenny et al
+        :return: None
+        """
+        for flowline in self.flowlines:
+            displacementVector = vectorFromPoints(flowline.midPoint, flowline.p1)
+            uConstr = vectorFromPoints(flowline.midPoint, flowline.endNode)  # the u-component constraint
+            vConstr = Vector(uConstr.y, -1*uConstr.x).scale(self.constraintRectAspect)  # the v-component constraint
+            uComp = displacementVector.projectionOnto(uConstr)
+            uRatio = uComp.getMagnitude() / uConstr.getMagnitude()
+            moved = False
+            # If u-component constraint is exceeded, scale the vector by the appropriate amount
+            if uRatio > 1:
+                displacementVector.scale(1.0/uRatio)
+                moved = True
+            # If v-component constraint is exceeded, scale the vector by the appropriate amount
+            vComp = displacementVector.projectionOnto(vConstr)
+            vRatio = vComp.getMagnitude() / vConstr.getMagnitude()
+            if vRatio > 1:
+                displacementVector.scale(1.0/vRatio)
+                moved = True
+            if moved:
+                flowline.p1 = flowline.midPoint + displacementVector
+                flowline.cacheIntermediatePoints(self.bezierRes)
+
+
 def run(iface, lineLayer, iterations, snapThreshold=0, bezierRes=15):
     """
     Runs the algorithm
@@ -340,8 +371,7 @@ def run(iface, lineLayer, iterations, snapThreshold=0, bezierRes=15):
             resultantForces.append(rForce)
         fm.applyForces(resultantForces)
         # Apply rectangle constraint
-
-        pass
+        fm.applyRectangleConstraints()
 
     # Reduce intersections of flowlines with a common node
 

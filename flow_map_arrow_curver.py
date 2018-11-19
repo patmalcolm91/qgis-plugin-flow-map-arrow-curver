@@ -209,7 +209,7 @@ class FlowMapArrowCurver:
                 JennyAlgorithm.run(iface=self.iface, snapThreshold=nodeThreshold, lineLayer=selectedLayer,
                                    iterations=nIter)
             except Exception as exception:
-                self.iface.messageBar().pushMessage("Flow Map Arrow Curver", "Operation Failed!",
+                self.iface.messageBar().pushMessage("Flow Map Arrow Curver", "Operation Failed! An Error Occurred.",
                                                     level=QgsMessageBar.WARNING, duration=5)
                 raise exception
             else:
