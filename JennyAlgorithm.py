@@ -428,6 +428,24 @@ class FlowMap(object):
                 flowline.p1 = flowline.midPoint + displacementVector
                 flowline.cacheIntermediatePoints(self.bezierRes)
 
+    def reduceFlowLineIntersections(self):
+        """
+        Reduces intersections between flowlines which share a common node.
+        See Section 3.2.2 of Jenny et al
+        :return: None
+        """
+        # TODO: implement this function
+        pass
+
+    def moveFlowLinesOffNodes(self):
+        """
+        Moves flowlines away from nodes which they intersect.
+        See Section 3.2.3 of Jenny et al
+        :return: None
+        """
+        # TODO: implement this function
+        pass
+
 
 def run(iface, lineLayer, nodeLayer, nodeRadiiExpr, lineWidthExpr, iterations, snapThreshold=0, bezierRes=15):
     """
