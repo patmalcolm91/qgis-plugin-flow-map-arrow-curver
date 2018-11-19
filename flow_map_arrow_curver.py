@@ -277,12 +277,30 @@ class FlowMapArrowCurver:
             nodeRadiiExpr = self.dlg.nodeRadiusExpressionWidget.asExpression()
             nodeThreshold = self.dlg.nodeThresholdBox.value()
             nIter = self.dlg.iterationsBox.value()
+            w_flows = self.dlg.w_FlowsBox.value()
+            alpha = self.dlg.alphaBox.value()
+            w_nodes = self.dlg.w_NodesBox.value()
+            beta = self.dlg.betaBox.value()
+            w_antiTorsion = self.dlg.w_antiTorsionBox.value()
+            w_spring = self.dlg.w_springBox.value()
+            kShort = self.dlg.kShortBox.value()
+            kLong = self.dlg.kLongBox.value()
+            Cp = self.dlg.c_pBox.value()
+            w_angRes = self.dlg.w_angResBox.value()
+            K = self.dlg.kBox.value()
+            C = self.dlg.cBox.value()
+            bezierRes = self.dlg.bezierResBox.value()
+            constrainAspect = self.dlg.constrainAspectBox.value()
+            nodeBuffer = self.dlg.nodeBufferBox.value()
 
             # Run the algorithm with the given parameters
             try:
-                JennyAlgorithm.run(iface=self.iface, snapThreshold=nodeThreshold, lineLayer=selectedLineLayer,
-                                   nodeLayer=selectedNodeLayer, nodeRadiiExpr=nodeRadiiExpr,
-                                   lineWidthExpr=lineWidthExpr, iterations=nIter)
+                JennyAlgorithm.run(iface=self.iface, lineLayer=selectedLineLayer, nodeLayer=selectedNodeLayer,
+                                   nodeRadiiExpr=nodeRadiiExpr, lineWidthExpr=lineWidthExpr, iterations=nIter,
+                                   w_flows=w_flows, w_nodes=w_nodes, w_antiTorsion=w_antiTorsion, w_spring=w_spring,
+                                   w_angRes=w_angRes, snapThreshold=nodeThreshold, bezierRes=bezierRes, alpha=alpha,
+                                   beta=beta, kShort=kShort, kLong=kLong, Cp=Cp, K=K, C=C,
+                                   constraintRectAspect=constrainAspect, nodeBuffer=nodeBuffer)
             except Exception as exception:
                 self.iface.messageBar().pushMessage("Flow Map Arrow Curver", "Operation Failed! An Error Occurred.",
                                                     level=QgsMessageBar.WARNING, duration=5)

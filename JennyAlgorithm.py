@@ -88,7 +88,7 @@ class FlowMap(object):
     """
     def __init__(self, w_flows=1, w_nodes=0.5, w_antiTorsion=0.8, w_spring=1, w_angRes=3.75,
                  snapThreshold=0, bezierRes=15, alpha=4, beta=4, kShort=0.5, kLong=0.05, Cp=2.5, K=4, C=4,
-                 constraintRectAspect=0.5):
+                 constraintRectAspect=0.5, nodeBuffer=0):
         self.nodes = []  # type: list[Node]
         self.nodeRadii = []  # type: list[float]
         self.flowlines = []  # type: list[FlowLine]
@@ -109,6 +109,7 @@ class FlowMap(object):
         self.K = K  # type: float  # angular resolution repulsion factor
         self.C = C  # type: float  # angular resolution clamping factor
         self.constraintRectAspect = constraintRectAspect
+        self.nodeBuffer = nodeBuffer
 
     def updateGeometryOnLayer(self, layer):
         """
@@ -447,13 +448,17 @@ class FlowMap(object):
         pass
 
 
-def run(iface, lineLayer, nodeLayer, nodeRadiiExpr, lineWidthExpr, iterations, snapThreshold=0, bezierRes=15):
+def run(iface, lineLayer, nodeLayer, nodeRadiiExpr="0", lineWidthExpr="1", iterations=100, w_flows=1, w_nodes=0.5,
+        w_antiTorsion=0.8, w_spring=1, w_angRes=3.75, snapThreshold=0, bezierRes=15, alpha=4, beta=4, kShort=0.5,
+        kLong=0.05, Cp=2.5, K=4, C=4, constraintRectAspect=0.5, nodeBuffer=0):
     """
     Runs the algorithm
     :return:
     """
     # Load the nodes and flows into a data structure
-    fm = FlowMap(snapThreshold=snapThreshold, bezierRes=bezierRes)
+    fm = FlowMap(w_flows=w_flows, w_nodes=w_nodes, w_antiTorsion=w_antiTorsion, w_spring=w_spring, w_angRes=w_angRes,
+                 snapThreshold=snapThreshold, bezierRes=bezierRes, alpha=alpha, beta=beta, kShort=kShort, kLong=kLong,
+                 Cp=Cp, K=K, C=C, constraintRectAspect=constraintRectAspect, nodeBuffer=nodeBuffer)
     fm.getNodesFromLineLayer(lineLayer)
     if nodeLayer is not None:
         fm.getNodeRadiiFromLayer(nodeLayer, nodeRadiiExpr)
@@ -488,9 +493,9 @@ def run(iface, lineLayer, nodeLayer, nodeRadiiExpr, lineWidthExpr, iterations, s
         # Apply rectangle constraint
         fm.applyRectangleConstraints()
 
-    # Reduce intersections of flowlines with a common node
+    # Reduce intersections of flowlines with a common node (this should actually be done right after force application
 
-    # Move flows off of nodes
+    # Move flows off of nodes (should this be done in the iteration steps?
 
     # Update the geometry of the layer
     fm.updateGeometryOnLayer(lineLayer)

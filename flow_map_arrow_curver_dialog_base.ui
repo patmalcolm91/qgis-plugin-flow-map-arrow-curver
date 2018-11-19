@@ -30,7 +30,7 @@
       </sizepolicy>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tabWidgetPage1" native="true">
       <attribute name="title">
@@ -730,6 +730,47 @@
          </property>
          <property name="text">
           <string>Node Buffer:</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_17">
+         <property name="geometry">
+          <rect>
+           <x>205</x>
+           <y>10</y>
+           <width>101</width>
+           <height>20</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Constrain Aspect:</string>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="constrainAspectBox">
+         <property name="geometry">
+          <rect>
+           <x>310</x>
+           <y>0</y>
+           <width>61</width>
+           <height>33</height>
+          </rect>
+         </property>
+         <property name="toolTip">
+          <string>Aspect ratio of rectangle constraining the control point of each flowline.</string>
+         </property>
+         <property name="decimals">
+          <number>1</number>
+         </property>
+         <property name="minimum">
+          <double>0.100000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>10.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.100000000000000</double>
+         </property>
+         <property name="value">
+          <double>0.500000000000000</double>
          </property>
         </widget>
        </widget>
