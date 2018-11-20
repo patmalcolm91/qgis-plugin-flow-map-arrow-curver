@@ -56,6 +56,7 @@ class FlowLine(QBezier):
         self.startNode = self.p0
         self.endNode = self.p2
         self.intermediatePointsCache = []  # holds a cache of the intermediate points to reduce redundant calculations
+        self.locked = False  # whether or not the position of this flowline is locked, if True, forces won't affect it
 
     def cacheIntermediatePoints(self, resolution):
         """
@@ -107,9 +108,7 @@ class FlowMap(object):
                  snapThreshold=0, bezierRes=15, alpha=4, beta=4, kShort=0.5, kLong=0.05, Cp=2.5, K=4, C=4,
                  constraintRectAspect=0.5, nodeBuffer=0):
         self.nodes = []  # type: list[Node]
-        self.nodeRadii = []  # type: list[float]
         self.flowlines = []  # type: list[FlowLine]
-        self.flowlineWidths = []  # type: list[float]
         self.mapScale = 1  # type: int  # order of magnitude of the map. Used to scale values to avoid extreme values
         self.w_flows = w_flows  # type: float
         self.w_nodes = w_nodes  # type: float
@@ -176,6 +175,24 @@ class FlowMap(object):
         # return the remaining list
         return self.nodes
 
+    def getNearestNode(self, point):
+        """
+        returns the node which is nearest to the given point
+        :param point: the point
+        :return: the relevant node
+        :type point: Point
+        """
+        winner = None
+        winningDist = None
+        for node in self.nodes:
+            dist = node.distanceFrom(point)
+            if winningDist is None or dist < winningDist:
+                winner = node
+                winningDist = dist
+            if dist == 0:
+                break
+        return winner
+
     def getNodeRadiiFromLayer(self, nodeLayer, expression):
         """
         Reads a point layer and evaluates an expression to generate a list of graphical node radii.
@@ -185,7 +202,6 @@ class FlowMap(object):
         :type nodeLayer: QgsVectorLayer
         :type expression: QString
         """
-        self.nodeRadii = []
         context = QgsExpressionContext()
         scope = QgsExpressionContextScope()
         context.appendScope(scope)
@@ -193,21 +209,29 @@ class FlowMap(object):
             scope.setFeature(feat)
             exp = QgsExpression(expression)
             val = exp.evaluate(context)
-            if val is None:
-                self.nodeRadii.append(0)
-            else:
-                self.nodeRadii.append(val)
+            radius = 0 if val is None else val
+            geom = feat.geometry().asPoint()
+            self.getNearestNode(Point(geom.x(), geom.y())).radius = radius
+
+    def averageNodeRadius(self):
+        """
+        Returns the average of the node radii
+        :return: average radius of all nodes
+        """
+        sum = 0
+        for node in self.nodes:
+            sum += node.radius
+        return float(sum) / len(self.nodes)
 
     def getLineWidthFromLayer(self, lineLayer, expression):
         """
-        Reads a point layer and evaluates an expression to generate a list of graphical node radii.
-        :param nodeLayer: point layer containing nodes.
+        Reads a point layer and evaluates an expression to generate a list of graphical line widths.
+        :param lineLayer: line layer containing nodes.
         :param expression: expression to be evaluated to get the radii.
         :return: None
-        :type nodeLayer: QgsVectorLayer
+        :type lineLayer: QgsVectorLayer
         :type expression: QString
         """
-        self.flowlineWidths = []
         context = QgsExpressionContext()
         scope = QgsExpressionContextScope()
         context.appendScope(scope)
@@ -215,10 +239,12 @@ class FlowMap(object):
             scope.setFeature(feat)
             exp = QgsExpression(expression)
             val = exp.evaluate(context)
-            if val is None:
-                self.flowlineWidths.append(0)
-            else:
-                self.flowlineWidths.append(val)
+            width = 0 if val is None else val
+            # Find the corresponding edge and assign its width
+            for flowline in self.flowlines:
+                if flowline.fid == feat.id():
+                    flowline.width = width
+                    break
 
     def calculateMapScale(self):
         """
@@ -415,8 +441,9 @@ class FlowMap(object):
         :type forces: list[Vector]
         """
         for i, force in enumerate(forces):
-            self.flowlines[i].p1 += force
-            self.flowlines[i].cacheIntermediatePoints(self.bezierRes)
+            if not self.flowlines[i].locked:
+                self.flowlines[i].p1 += force
+                self.flowlines[i].cacheIntermediatePoints(self.bezierRes)
 
     def applyRectangleConstraints(self):
         """
@@ -446,15 +473,27 @@ class FlowMap(object):
                 flowline.p1 = flowline.midPoint + displacementVector
                 flowline.cacheIntermediatePoints(self.bezierRes)
 
+    def flowLineOverlapsNodes(self, flowline):
+        """
+        Checks if the given flowline overlaps any nodes.
+        :param flowline: the flowline to check
+        :return: True if overlaps, False if not
+        """
+        for node in self.nodes:
+            reqdDist = node.radius + self.nodeBuffer + flowline.width
+            if flowline.shortestDistanceFromPoint(node) < reqdDist:
+                return True
+        return False
+
     def getFlowLinesOverlappingNodes(self):
         """
         Returns a list of flowlines which overlap a node.
         :return:
         """
         result = []
-        for i, flowline in enumerate(self.flowlines):
+        for flowline in self.flowlines:
             for node in self.nodes:
-                reqdDist = self.nodeRadii[i] + self.nodeBuffer + self.flowlineWidths[i]
+                reqdDist = node.radius + self.nodeBuffer + flowline.width
                 if flowline.shortestDistanceFromPoint(node) < reqdDist:
                     result.append(flowline)
                     continue
@@ -469,15 +508,61 @@ class FlowMap(object):
         # TODO: implement this function
         pass
 
+    def pointIsWithinFlowLineRectangle(self, point, flowline):
+        """
+        Checks if a point is within the the constraint rectangle of the given flowline
+        :param point: the point to check
+        :param flowline: the flowline for which to calculate the constraining rectangle
+        :return: True if point within rectangle, else False
+        :type point: Point
+        :type flowline: FlowLine
+        """
+        displacementVector = vectorFromPoints(flowline.midPoint, point)
+        uConstr = vectorFromPoints(flowline.midPoint, flowline.endNode)  # the u-component constraint
+        vConstr = Vector(uConstr.y, -1 * uConstr.x).scale(self.constraintRectAspect)  # the v-component constraint
+        uComp = displacementVector.projectionOnto(uConstr)
+        vComp = displacementVector.projectionOnto(vConstr)
+        uRatio = uComp.getMagnitude() / uConstr.getMagnitude()
+        vRatio = vComp.getMagnitude() / vConstr.getMagnitude()
+        if uRatio <= 1 or vRatio <= 1:
+            return True
+        else:
+            return False
+
     def moveFlowLineOffNodes(self, flowline):
         """
-        Moves specified flowline away from nodes which they intersect by moving control point in an Euler spiral.
+        Moves specified flowline away from nodes which they intersect by moving control point in an Archimedean spiral.
         See Section 3.2.3 of Jenny et al
         :param flowline: the flowline on which to act
-        :return: None
+        :return: True if successful, False if no candidate point was suitable and flowline remains unchanged
+        :type flowline: FlowLine
         """
-        # TODO: implement this function
-        pass
+        trialCurve = deepcopy(flowline)  # work on a copy of the curve so we can safely modify its geometry
+        # the archimedean spiral radial change constant. Per Jenny et al, set to the minimum buffer distance
+        rho = self.averageNodeRadius() + flowline.width + self.nodeBuffer
+        spacing = rho  # spacing along the curve between each candidate point. Set to the same as rho, per Jenny et al
+        outOfBoundsPointAngle = 0
+        lastPointWasInBounds = True  # whether or not the last point checked was in bounds
+        step = 1  # iteration step
+        while True:
+            # Calculate the candidate point on the spiral
+            theta = math.sqrt(2.0*spacing*step/rho)
+            if theta >= outOfBoundsPointAngle + 2*math.pi:
+                return False
+            displacementVector = Vector(rho*theta*math.cos(theta), rho*theta*math.sin(theta))
+            trialCurve.p1 = flowline.p1 + displacementVector
+            if self.pointIsWithinFlowLineRectangle(trialCurve.p1, trialCurve):
+                trialCurve.cacheIntermediatePoints(self.bezierRes)
+                if not self.flowLineOverlapsNodes(trialCurve):
+                    flowline.p1 = trialCurve.p1
+                    flowline.cacheIntermediatePoints()
+                    flowline.locked = True
+                    return True
+                lastPointWasInBounds = True
+            elif lastPointWasInBounds == True:
+                lastPointWasInBounds = False
+                outOfBoundsPointAngle = theta
+            step += 1
 
 
 def run(iface, lineLayer, nodeLayer, nodeRadiiExpr="0", lineWidthExpr="1", iterations=100, w_flows=1, w_nodes=0.5,
@@ -500,7 +585,7 @@ def run(iface, lineLayer, nodeLayer, nodeRadiiExpr="0", lineWidthExpr="1", itera
     fm.calculateMapScale()
     fm.loadFlowLinesFromLayer(lineLayer)
     # Iterate
-    j=0  # used in node collision avoidance algorithm
+    j = 0  # used in node collision avoidance algorithm
     for i in range(iterations):
         w = 1 - float(i)/iterations
         # Calculate flowline-against-flowline forces
@@ -534,8 +619,7 @@ def run(iface, lineLayer, nodeLayer, nodeRadiiExpr="0", lineWidthExpr="1", itera
             n = math.ceil(float(len(N))/(iterations - i - 1))
             movedFlows = 0  # number of flows which have been moved. Iterate until this equals n
             for flowline in N:
-                # if non-overlapping geometry for flowline exists, use it and increase movedFlows
-                movedFlows += 1
+                movedFlows += 1 if fm.moveFlowLineOffNodes(flowline) else 0
                 if movedFlows >= n:
                     break
                 pass
