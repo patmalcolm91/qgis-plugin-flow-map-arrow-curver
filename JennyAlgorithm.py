@@ -2,6 +2,7 @@
 Implements a version of the algorithm described by Jenny et al
 """
 
+import Geometry
 from QBezier import *
 from copy import deepcopy
 from qgis.gui import QgsMessageBar
@@ -80,6 +81,20 @@ class FlowLine(QBezier):
                 winner = point
                 winningDistance = dist
         return winner
+
+    def shortestDistanceFromPoint(self, otherPoint):
+        """
+        Returns the shortest distance from the linear-segmented version of the flowline to a given point
+        :return: shortest distance from point to flowline
+        :type otherPoint: Point
+        """
+        shortestDist = None
+        pointList = [self.startNode] + self.intermediatePointsCache + [self.endNode]
+        for i in range(len(pointList)-1):
+            distToSegment = Geometry.distanceFromPointToLineSegment(otherPoint, pointList[i], pointList[i+1])
+            if shortestDist is None or distToSegment < shortestDist:
+                shortestDist = distToSegment
+        return shortestDist
 
 
 class FlowMap(object):
