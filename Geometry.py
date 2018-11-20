@@ -182,6 +182,7 @@ def vectorFromPoints(p1, p2):
     dy = p2.y - p1.y
     return Vector(dx, dy)
 
+
 def distanceFromPointToLineSegment(point, lineStartPoint, lineEndPoint):
     """
     Calculates the shortest distance between the given point and the line segment between the given points.
@@ -198,14 +199,90 @@ def distanceFromPointToLineSegment(point, lineStartPoint, lineEndPoint):
     theta = segVector.getDirection() - oVector.getDirection()
     if math.cos(theta) < 0:
         return point.distanceFrom(lineStartPoint)
-    elif math.cos(theta) > segVector.getMagnitude():
+    elif oVector.getMagnitude()*math.cos(theta) > segVector.getMagnitude():
         return point.distanceFrom(lineEndPoint)
     else:
-        return oVector.getMagnitude()*math.sin(theta)
+        return abs(oVector.getMagnitude()*math.sin(theta))
+
+
+def findIntersectionOfLineSegments(start1, end1, start2, end2):
+    """
+    Returns the intersection of the line segments defined by the given points, False if they do not intersect, or True
+    if the lines are coincident
+    :param start1: start point of line segment 1
+    :param end1: end point of line segment 1
+    :param start2: start point of line segment 2
+    :param end2: end point of line segment 2
+    :return: shortest distance between line segments
+    :type start1: Point
+    :type end1: Point
+    :type start2: Point
+    :type end2: Point
+    """
+    x1, y1, x2, y2 = start1.x, start1.y, end1.x, end1.y
+    x3, y3, x4, y4 = start2.x, start2.y, end2.x, end2.y
+    denominator = float(((x1-x2)*(y3-y4)-(y1-y2)*(x3-x4)))
+    if denominator == 0:  # if the two line segments are parallel or coincident
+        if x1 == x2:  # if the first (and therefore also the second) line is vertical
+            if max(y1, y2) > min(y3, y4) and min(y1, y2) < max(y3, y4) and x1 == x3:  # if lines are coincident vertical
+                return True
+            else:  # if the lines are parallel vertical
+                return False
+        else:  # the lines are not vertical, so check for coincidence
+            m1 = (y2 - y1)/(x2 - x1)
+            mBetween = (y3 - y2)/(x3 - x2)  # the slope between two points on different lines
+            if m1 == mBetween:  # the lines are coincident
+                return True
+            else:  # the lines are parallel
+                return False
+    t = ((x1-x3)*(y3-y4)-(y1-y3)*(x3-x4)) / denominator
+    if 0 <= t <= 1:
+        u = -1*((x1-x2)*(y1-y3)-(y1-y2)*(x1-x3)) / denominator
+        if 0 <= u <= 1:
+            px = x1 + t*(x2-x1)
+            py = y1 + t*(y2-y1)
+            return Point(px, py)
+    return False
+
+
+def distanceFromLineSegmentToLineSegment(start1, end1, start2, end2):
+    """
+    Calculates the shortest distance between two line segments defined by the given points.
+    :param start1: start point of line segment 1
+    :param end1: end point of line segment 1
+    :param start2: start point of line segment 2
+    :param end2: end point of line segment 2
+    :return: shortest distance between line segments
+    :type start1: Point
+    :type end1: Point
+    :type start2: Point
+    :type end2: Point
+    """
+    intersect = findIntersectionOfLineSegments(start1, end1, start2, end2)
+    # if intersect is a point, the lines intersect
+    if hasattr(intersect, "x"):
+        return 0.0
+    # if the lines are coincident
+    elif intersect == True:
+        return 0.0
+    else:
+        dist1 = distanceFromPointToLineSegment(start1, start2, end2)
+        dist2 = distanceFromPointToLineSegment(end1, start2, end2)
+        dist3 = distanceFromPointToLineSegment(start2, start1, end1)
+        dist4 = distanceFromPointToLineSegment(end2, start1, end1)
+        return min(dist1, dist2, dist3, dist4)
 
 
 # TEST CODE ============================================================================================================
 
+# p1, p2 = Point(1, 0), Point(5, 0)
+# p3, p4 = Point(2, 4), Point(4, 2)
+#
+# print(findIntersectionOfLineSegments(p1, p2, p3, p4))
+# print(distanceFromLineSegmentToLineSegment(p1, p2, p3, p4))
+# print(distanceFromPointToLineSegment(p4, p1, p2))
+# print(distanceFromPointToLineSegment(p2, p3, p4))
+#
 # v1 = Vector(4, 3)
 # v2 = Vector(1, -1)
 # print(v1.dotProduct(v2))
