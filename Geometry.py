@@ -182,6 +182,27 @@ def vectorFromPoints(p1, p2):
     dy = p2.y - p1.y
     return Vector(dx, dy)
 
+def distanceFromPointToLineSegment(point, lineStartPoint, lineEndPoint):
+    """
+    Calculates the shortest distance between the given point and the line segment between the given points.
+    :param point: The point
+    :param lineStartPoint: line segment start point
+    :param lineEndPoint: line segment end point
+    :return: shortest distance
+    :type point: Point
+    :type lineStartPoint: Point
+    :type lineEndPoint: Point
+    """
+    segVector = vectorFromPoints(lineStartPoint, lineEndPoint)
+    oVector = vectorFromPoints(lineStartPoint, point)
+    theta = segVector.getDirection() - oVector.getDirection()
+    if math.cos(theta) < 0:
+        return point.distanceFrom(lineStartPoint)
+    elif math.cos(theta) > segVector.getMagnitude():
+        return point.distanceFrom(lineEndPoint)
+    else:
+        return oVector.getMagnitude()*math.sin(theta)
+
 
 # TEST CODE ============================================================================================================
 
