@@ -451,8 +451,14 @@ class FlowMap(object):
         Returns a list of flowlines which overlap a node.
         :return:
         """
-        # TODO: implement this function
-        return []
+        result = []
+        for i, flowline in enumerate(self.flowlines):
+            for node in self.nodes:
+                reqdDist = self.nodeRadii[i] + self.nodeBuffer + self.flowlineWidths[i]
+                if flowline.shortestDistanceFromPoint(node) < reqdDist:
+                    result.append(flowline)
+                    continue
+        return result
 
     def reduceFlowLineIntersections(self):
         """
