@@ -429,6 +429,14 @@ class FlowMap(object):
                 flowline.p1 = flowline.midPoint + displacementVector
                 flowline.cacheIntermediatePoints(self.bezierRes)
 
+    def getFlowLinesOverlappingNodes(self):
+        """
+        Returns a list of flowlines which overlap a node.
+        :return:
+        """
+        # TODO: implement this function
+        return []
+
     def reduceFlowLineIntersections(self):
         """
         Reduces intersections between flowlines which share a common node.
@@ -468,6 +476,7 @@ def run(iface, lineLayer, nodeLayer, nodeRadiiExpr="0", lineWidthExpr="1", itera
     fm.calculateMapScale()
     fm.loadFlowLinesFromLayer(lineLayer)
     # Iterate
+    j=0  # used in node collision avoidance algorithm
     for i in range(iterations):
         w = 1 - float(i)/iterations
         # Calculate flowline-against-flowline forces
@@ -492,10 +501,22 @@ def run(iface, lineLayer, nodeLayer, nodeRadiiExpr="0", lineWidthExpr="1", itera
         fm.applyForces(resultantForces)
         # Apply rectangle constraint
         fm.applyRectangleConstraints()
-
-    # Reduce intersections of flowlines with a common node (this should actually be done right after force application
-
-    # Move flows off of nodes (should this be done in the iteration steps?
+        # Move flows off of nodes
+        fm.moveFlowLinesOffNodes()
+        # Reduce intersections of flowlines with a common node
+        if (i > 0.1*iterations and j <= 0):
+            N = fm.getFlowLinesOverlappingNodes()
+            j = (iterations - i)/(len(N) + 1)/2
+            n = math.ceil(float(len(N))/(iterations - i - 1))
+            movedFlows = 0  # number of flows which have been moved. Iterate until this equals n
+            for flowline in N:
+                # if non-overlapping geometry for flowline exists, use it and increase movedFlows
+                movedFlows += 1
+                if movedFlows >= n:
+                    break
+                pass
+        else:
+            j -= 1
 
     # Update the geometry of the layer
     fm.updateGeometryOnLayer(lineLayer)
