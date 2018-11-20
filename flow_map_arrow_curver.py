@@ -304,7 +304,7 @@ class FlowMapArrowCurver:
             except Exception as exception:
                 self.iface.messageBar().pushMessage("Flow Map Arrow Curver", "Operation Failed! An Error Occurred.",
                                                     level=QgsMessageBar.WARNING, duration=5)
-                raise exception
+                raise
             else:
                 self.iface.messageBar().pushMessage("Flow Map Arrow Curver", "Operation Complete",
                                                     level=QgsMessageBar.INFO, duration=3)
