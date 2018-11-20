@@ -93,6 +93,8 @@ class FlowLine(QBezier):
         for i in range(len(pointList)-1):
             distToSegment = Geometry.distanceFromPointToLineSegment(otherPoint, pointList[i], pointList[i+1])
             if shortestDist is None or distToSegment < shortestDist:
+                if distToSegment == 0:
+                    return 0
                 shortestDist = distToSegment
         return shortestDist
 
