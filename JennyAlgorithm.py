@@ -501,9 +501,9 @@ def run(iface, lineLayer, nodeLayer, nodeRadiiExpr="0", lineWidthExpr="1", itera
         fm.applyForces(resultantForces)
         # Apply rectangle constraint
         fm.applyRectangleConstraints()
-        # Move flows off of nodes
-        fm.moveFlowLinesOffNodes()
         # Reduce intersections of flowlines with a common node
+
+        # Move flows off of nodes
         if (i > 0.1*iterations and j <= 0):
             N = fm.getFlowLinesOverlappingNodes()
             j = (iterations - i)/(len(N) + 1)/2
