@@ -469,10 +469,11 @@ class FlowMap(object):
         # TODO: implement this function
         pass
 
-    def moveFlowLinesOffNodes(self):
+    def moveFlowLineOffNodes(self, flowline):
         """
-        Moves flowlines away from nodes which they intersect.
+        Moves specified flowline away from nodes which they intersect by moving control point in an Euler spiral.
         See Section 3.2.3 of Jenny et al
+        :param flowline: the flowline on which to act
         :return: None
         """
         # TODO: implement this function
