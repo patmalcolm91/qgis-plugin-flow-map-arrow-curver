@@ -557,7 +557,11 @@ class FlowMap(object):
         for node in self.nodes:
             inAndOutFlows = node.inflows + node.outflows  # type: list[FlowLine]
             for i in range(len(inAndOutFlows)-1):
+                if inAndOutFlows[i].locked:
+                    continue
                 for j in range(i+1, len(inAndOutFlows)):
+                    if inAndOutFlows[j].locked:
+                        continue
                     if inAndOutFlows[i].interesectsFlowLine(inAndOutFlows[j]):
                         pointM = deepcopy(inAndOutFlows[i].p1)
                         pointN = deepcopy(inAndOutFlows[j].p1)
