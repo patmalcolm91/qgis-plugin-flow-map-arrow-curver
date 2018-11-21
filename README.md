@@ -4,6 +4,7 @@ This is a QGIS plugin which can be used to generate curved flow lines for use in
 one seen below:
 
 ![Example Flow Map](images/flowmapexample.png)
+
 Source: Jenny et al (2016)
 
 
