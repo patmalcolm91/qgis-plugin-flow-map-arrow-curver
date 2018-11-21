@@ -259,18 +259,19 @@ def distanceFromLineSegmentToLineSegment(start1, end1, start2, end2):
     :type end2: Point
     """
     intersect = findIntersectionOfLineSegments(start1, end1, start2, end2)
-    # if intersect is a point, the lines intersect
-    if hasattr(intersect, "x"):
-        return 0.0
     # if the lines are coincident
-    elif intersect == True:
+    if intersect is True:
         return 0.0
-    else:
+    # if the lines don't intersect
+    elif intersect is False:
         dist1 = distanceFromPointToLineSegment(start1, start2, end2)
         dist2 = distanceFromPointToLineSegment(end1, start2, end2)
         dist3 = distanceFromPointToLineSegment(start2, start1, end1)
         dist4 = distanceFromPointToLineSegment(end2, start1, end1)
         return min(dist1, dist2, dist3, dist4)
+    # if intersect is a point, the lines intersect
+    else:
+        return 0.0
 
 
 # TEST CODE ============================================================================================================
