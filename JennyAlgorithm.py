@@ -565,7 +565,7 @@ class FlowMap(object):
                         if inAndOutFlows[i] in node.outflows:
                             pointA = inAndOutFlows[i].endNode
                         elif inAndOutFlows[i] in node.inflows:
-                            pointA = inAndOutFlows[i].startNodeNode
+                            pointA = inAndOutFlows[i].startNode
                         else:
                             raise KeyError("Couldn't find flow belonging to node.")
                         # determine point B
