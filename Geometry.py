@@ -205,6 +205,42 @@ def distanceFromPointToLineSegment(point, lineStartPoint, lineEndPoint):
         return abs(oVector.getMagnitude()*math.sin(theta))
 
 
+def findIntersectionOfLines(start1, end1, start2, end2):
+    """
+    Returns the intersection of the lines defined by the given points, False if they are parallel, or True
+    if the lines are coincident
+    :param start1: start point of line 1
+    :param end1: end point of line 1
+    :param start2: start point of line 2
+    :param end2: end point of line 2
+    :return: intersection point of the lines, False if parallel, True if coincident
+    :type start1: Point
+    :type end1: Point
+    :type start2: Point
+    :type end2: Point
+    """
+    x1, y1, x2, y2 = start1.x, start1.y, end1.x, end1.y
+    x3, y3, x4, y4 = start2.x, start2.y, end2.x, end2.y
+    denominator = float(((x1-x2)*(y3-y4)-(y1-y2)*(x3-x4)))
+    if denominator == 0:  # if the two line segments are parallel or coincident
+        if x1 == x2:  # if the first (and therefore also the second) line is vertical
+            if max(y1, y2) > min(y3, y4) and min(y1, y2) < max(y3, y4) and x1 == x3:  # if lines are coincident vertical
+                return True
+            else:  # if the lines are parallel vertical
+                return False
+        else:  # the lines are not vertical, so check for coincidence
+            m1 = (y2 - y1)/(x2 - x1)
+            mBetween = (y3 - y2)/(x3 - x2)  # the slope between two points on different lines
+            if m1 == mBetween:  # the lines are coincident
+                return True
+            else:  # the lines are parallel
+                return False
+    t = ((x1-x3)*(y3-y4)-(y1-y3)*(x3-x4)) / denominator
+    px = x1 + t*(x2-x1)
+    py = y1 + t*(y2-y1)
+    return Point(px, py)
+
+
 def findIntersectionOfLineSegments(start1, end1, start2, end2):
     """
     Returns the intersection of the line segments defined by the given points, False if they do not intersect, or True
@@ -213,7 +249,7 @@ def findIntersectionOfLineSegments(start1, end1, start2, end2):
     :param end1: end point of line segment 1
     :param start2: start point of line segment 2
     :param end2: end point of line segment 2
-    :return: shortest distance between line segments
+    :return: intersection point of the line segments, False if no intersection, True if coincident
     :type start1: Point
     :type end1: Point
     :type start2: Point
