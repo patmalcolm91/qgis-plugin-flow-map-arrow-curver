@@ -6,6 +6,7 @@ import Geometry
 from QBezier import *
 from copy import deepcopy
 from qgis.gui import QgsMessageBar
+from PyQt4.QtGui import QProgressDialog, QProgressBar
 from qgis.core import *
 import math
 
@@ -593,6 +594,18 @@ def run(iface, lineLayer, nodeLayer, nodeRadiiExpr="0", lineWidthExpr="1", itera
     Runs the algorithm
     :return:
     """
+    # Generate a progress bar
+    progDialog = QProgressDialog()
+    progDialog.setWindowTitle("Progress")
+    progDialog.setLabelText("Generating flowmap from layers")
+    progBar = QProgressBar(progDialog)
+    progBar.setTextVisible(True)
+    progBar.setValue(0)
+    progDialog.setBar(progBar)
+    progDialog.setMinimumWidth(300)
+    progBar.setMaximum(iterations)
+    progDialog.can
+    progDialog.show()
     # Load the nodes and flows into a data structure
     fm = FlowMap(w_flows=w_flows, w_nodes=w_nodes, w_antiTorsion=w_antiTorsion, w_spring=w_spring, w_angRes=w_angRes,
                  snapThreshold=snapThreshold, bezierRes=bezierRes, alpha=alpha, beta=beta, kShort=kShort, kLong=kLong,
@@ -607,7 +620,11 @@ def run(iface, lineLayer, nodeLayer, nodeRadiiExpr="0", lineWidthExpr="1", itera
     fm.loadFlowLinesFromLayer(lineLayer)
     # Iterate
     j = 0  # used in node collision avoidance algorithm
+    progDialog.setLabelText("Iterating")
     for i in range(iterations):
+        progBar.setValue(i)
+        if progDialog.wasCanceled():
+            break
         w = 1 - float(i)/iterations
         # Calculate flowline-against-flowline forces
         flowline_forces, Fs = fm.calculateInterFlowLineForces(returnSumOfMagnitudes=True)
@@ -647,9 +664,12 @@ def run(iface, lineLayer, nodeLayer, nodeRadiiExpr="0", lineWidthExpr="1", itera
         else:
             j -= 1
 
+    progDialog.setLabelText("Updating Geometry")
     # Update the geometry of the layer
     fm.updateGeometryOnLayer(lineLayer)
     iface.mapCanvas().refresh()
+    # close the dialog
+    progDialog.close()
 
 
 # TEST CODE ============================================================================================================
