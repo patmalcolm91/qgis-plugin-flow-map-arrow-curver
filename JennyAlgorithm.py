@@ -604,7 +604,6 @@ def run(iface, lineLayer, nodeLayer, nodeRadiiExpr="0", lineWidthExpr="1", itera
     progDialog.setBar(progBar)
     progDialog.setMinimumWidth(300)
     progBar.setMaximum(iterations)
-    progDialog.can
     progDialog.show()
     # Load the nodes and flows into a data structure
     fm = FlowMap(w_flows=w_flows, w_nodes=w_nodes, w_antiTorsion=w_antiTorsion, w_spring=w_spring, w_angRes=w_angRes,
