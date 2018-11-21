@@ -99,6 +99,22 @@ class FlowLine(QBezier):
                 shortestDist = distToSegment
         return shortestDist
 
+    def interesectsFlowLine(self, otherFlowLine):
+        """
+        Determines whether this flowline intersects another, ignoring endpoints
+        :param otherFlowLine: the flowline to check against
+        :return: True if they intersect, False if not or they intersect at an endpoint
+        :type otherFlowLine: FlowLine
+        """
+        for i in range(len(self.intermediatePointsCache)-1):
+            p1, p2 = self.intermediatePointsCache[i], self.intermediatePointsCache[i+1]
+            for j in range(len(otherFlowLine.intermediatePointsCache)-1):
+                p3, p4 = otherFlowLine.intermediatePointsCache[j], otherFlowLine.intermediatePointsCache[j+1]
+                intersect = Geometry.findIntersectionOfLineSegments(p1, p2, p3, p4)
+                if intersect is True or intersect is not False:
+                    return True
+        return False
+
 
 class FlowMap(object):
     """
@@ -505,8 +521,13 @@ class FlowMap(object):
         See Section 3.2.2 of Jenny et al
         :return: None
         """
-        # TODO: implement this function
-        pass
+        for node in self.nodes:
+            inAndOutFlows = node.inflows + node.outflows  # type: list[FlowLine]
+            for i in range(len(inAndOutFlows)-1):
+                for j in range(i+1, len(inAndOutFlows)):
+                    if inAndOutFlows[i].interesectsFlowLine(inAndOutFlows[j]):
+                        # TODO: implement the node-moving logic
+                        pass
 
     def pointIsWithinFlowLineRectangle(self, point, flowline):
         """
