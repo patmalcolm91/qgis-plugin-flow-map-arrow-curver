@@ -9,15 +9,15 @@
 [general]
 name=Flow Map Curved Arrow Calculator
 qgisMinimumVersion=2.0
-description=Generates middle points for lines connecting OD flows.
+description=Converts straight lines representing non-branching origin-destination flows to curves
 version=0.1
 author=Patrick Malcolm
 email=patmalcolm91@gmail.com
 
-about=Generates a middle point for OD pair lines to aid in the creation of an OD flow map with curved arrows. Based on a modified version of the algorithm in https://doi.org/10.1080/17445647.2017.1313788
+about=Converts straight flow map lines to bezier curves using the algorithm described in http://dx.doi.org/10.1080/13658816.2017.1307378 which avoids lines overlapping nodes, minimizes line intersections, and increases angular resolution at nodes, among other criteria.
 
-tracker=http://bugs
-repository=http://repo
+tracker=https://github.com/patmalcolm91/qgis-plugin-flow-map-arrow-curver
+repository=https://github.com/patmalcolm91/qgis-plugin-flow-map-arrow-curver
 # End of mandatory metadata
 
 # Recommended items:
@@ -26,13 +26,13 @@ repository=http://repo
 # changelog=
 
 # Tags are comma separated with spaces allowed
-tags=python
+tags=python, flow map, curved lines, origin-destination, OD, flow line
 
-homepage=http://homepage
+homepage=https://github.com/patmalcolm91/qgis-plugin-flow-map-arrow-curver
 category=Plugins
 icon=icon.png
 # experimental flag
-experimental=True
+experimental=False
 
 # deprecated flag (applies to the whole plugin, not just a single version)
 deprecated=False
