@@ -116,6 +116,38 @@ class FlowLine(QBezier):
                     return True
         return False
 
+    def constrainPointInsideRectangle(self, point, referencePoint=None):
+        """
+        Constrains a point inside the constraining rectangle based on the path from the reference point.
+        :param point: the point which to constrain into the rectangle
+        :param referencePoint: from where to measure the displacement. Default (None) uses midpoint
+        :return: point if inside rectangle, else a point along the path from referencePoint to point which is.
+        :type point: Point
+        :type referencePoint: Point
+        """
+        if referencePoint is None:
+            referencePoint = self.midPoint
+        displacementVector = vectorFromPoints(referencePoint, point)
+        uConstr = vectorFromPoints(self.midPoint, self.endNode)  # the u-component constraint
+        vConstr = Vector(uConstr.y, -1 * uConstr.x).setMagnitude(self.constrainingRectangleWidth/2.0)  # the v-constr.
+        uComp = displacementVector.projectionOnto(uConstr)
+        uRatio = uComp.getMagnitude() / uConstr.getMagnitude()
+        moved = False
+        # If u-component constraint is exceeded, scale the vector by the appropriate amount
+        if uRatio > 1:
+            displacementVector.scale(1.0 / uRatio)
+            moved = True
+        # If v-component constraint is exceeded, scale the vector by the appropriate amount
+        vComp = displacementVector.projectionOnto(vConstr)
+        vRatio = vComp.getMagnitude() / vConstr.getMagnitude()
+        if vRatio > 1:
+            displacementVector.scale(1.0 / vRatio)
+            moved = True
+        if not moved:
+            return point
+        else:
+            return point+displacementVector
+
 
 class FlowMap(object):
     """
@@ -527,8 +559,34 @@ class FlowMap(object):
             for i in range(len(inAndOutFlows)-1):
                 for j in range(i+1, len(inAndOutFlows)):
                     if inAndOutFlows[i].interesectsFlowLine(inAndOutFlows[j]):
-                        # TODO: implement the node-moving logic
-                        pass
+                        pointM = deepcopy(inAndOutFlows[i].p1)
+                        pointN = deepcopy(inAndOutFlows[j].p1)
+                        # determine point A
+                        if inAndOutFlows[i] in node.outflows:
+                            pointA = inAndOutFlows[i].endNode
+                        elif inAndOutFlows[i] in node.inflows:
+                            pointA = inAndOutFlows[i].startNodeNode
+                        else:
+                            raise KeyError("Couldn't find flow belonging to node.")
+                        # determine point B
+                        if inAndOutFlows[j] in node.outflows:
+                            pointB = inAndOutFlows[j].endNode
+                        elif inAndOutFlows[j] in node.inflows:
+                            pointB = inAndOutFlows[j].startNode
+                        else:
+                            raise KeyError("Couldn't find flow belonging to node.")
+                        # Make sure the other points on the two flows aren't the same
+                        if pointA == pointB:
+                            continue
+                        Mbar = Geometry.findIntersectionOfLines(pointM, pointA, node, pointN)
+                        Nbar = Geometry.findIntersectionOfLines(pointN, pointB, node, pointM)
+                        Mbar = inAndOutFlows[i].constrainPointInsideRectangle(Mbar, pointM)
+                        Nbar = inAndOutFlows[j].constrainPointInsideRectangle(Nbar, pointN)
+                        inAndOutFlows[i].p1 = Mbar
+                        inAndOutFlows[j].p1 = Nbar
+                        inAndOutFlows[i].cacheIntermediatePoints()
+                        inAndOutFlows[j].cacheIntermediatePoints()
+
 
     def pointIsWithinFlowLineRectangle(self, point, flowline):
         """
