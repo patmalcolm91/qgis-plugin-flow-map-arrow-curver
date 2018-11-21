@@ -584,8 +584,8 @@ class FlowMap(object):
                         Nbar = inAndOutFlows[j].constrainPointInsideRectangle(Nbar, pointN)
                         inAndOutFlows[i].p1 = Mbar
                         inAndOutFlows[j].p1 = Nbar
-                        inAndOutFlows[i].cacheIntermediatePoints()
-                        inAndOutFlows[j].cacheIntermediatePoints()
+                        inAndOutFlows[i].cacheIntermediatePoints(self.bezierRes)
+                        inAndOutFlows[j].cacheIntermediatePoints(self.bezierRes)
 
 
     def pointIsWithinFlowLineRectangle(self, point, flowline):
