@@ -721,7 +721,6 @@ def run(iface, lineLayer, nodeLayer, nodeRadiiExpr="0", lineWidthExpr="1", itera
                 movedFlows += 1 if fm.moveFlowLineOffNodes(flowline) else 0
                 if movedFlows >= n:
                     break
-                pass
         else:
             j -= 1
 
