@@ -24,7 +24,7 @@ tested on the development machine, and processing took several hours.
 
 QGIS >=2.0
 
-The plugin has been tested on QGIS 2.18 on Linux.
+The plugin has been tested on QGIS 2.18 on Linux and Windows.
 
 ### Installing
 
