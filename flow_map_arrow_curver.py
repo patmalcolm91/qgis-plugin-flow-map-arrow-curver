@@ -198,12 +198,16 @@ class FlowMapArrowCurver:
         self.lineLayerList = []  # holds the filtered layer names
         self.pointLayerList = []  # holds the filtered layer names
         for i, layer in enumerate(self.layers):
-            if layer.geometryType() == 0:  # 0: point, 1: line
-                self.pointLayerIndexMap[len(self.pointLayerList)] = i  # put the index pair in the dictionary
-                self.pointLayerList.append(layer.name())  # add the layer name to the list
-            if layer.geometryType() == 1:  # 0: point, 1: line
-                self.lineLayerIndexMap[len(self.lineLayerList)] = i  # put the index pair in the dictionary
-                self.lineLayerList.append(layer.name())  # add the layer name to the list
+            try:
+                if layer.geometryType() == 0:  # 0: point, 1: line
+                    self.pointLayerIndexMap[len(self.pointLayerList)] = i  # put the index pair in the dictionary
+                    self.pointLayerList.append(layer.name())  # add the layer name to the list
+                elif layer.geometryType() == 1:  # 0: point, 1: line
+                    self.lineLayerIndexMap[len(self.lineLayerList)] = i  # put the index pair in the dictionary
+                    self.lineLayerList.append(layer.name())  # add the layer name to the list
+            except AttributeError:
+                # if the above checks failed, i.e. because of a raster layer, skip it
+                continue
 
 
     def lineLayerChanged(self, index):
