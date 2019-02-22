@@ -27,7 +27,7 @@ import resources
 # Import the code for the dialog
 from flow_map_arrow_curver_dialog import FlowMapArrowCurverDialog
 import os.path
-import JennyAlgorithm
+#import JennyAlgorithm
 from qgis.core import *
 from qgis.gui import QgsMessageBar, QgsFieldExpressionWidget
 
@@ -298,17 +298,16 @@ class FlowMapArrowCurver:
             nodeBuffer = self.dlg.nodeBufferBox.value()
 
             # Run the algorithm with the given parameters
-            try:
-                JennyAlgorithm.run(iface=self.iface, lineLayer=selectedLineLayer, nodeLayer=selectedNodeLayer,
-                                   nodeRadiiExpr=nodeRadiiExpr, lineWidthExpr=lineWidthExpr, iterations=nIter,
-                                   w_flows=w_flows, w_nodes=w_nodes, w_antiTorsion=w_antiTorsion, w_spring=w_spring,
-                                   w_angRes=w_angRes, snapThreshold=nodeThreshold, bezierRes=bezierRes, alpha=alpha,
-                                   beta=beta, kShort=kShort, kLong=kLong, Cp=Cp, K=K, C=C,
-                                   constraintRectAspect=constrainAspect, nodeBuffer=nodeBuffer)
-            except Exception as exception:
-                self.iface.messageBar().pushMessage("Flow Map Arrow Curver", "Operation Failed! An Error Occurred.",
-                                                    level=QgsMessageBar.WARNING, duration=5)
-                raise
-            else:
-                self.iface.messageBar().pushMessage("Flow Map Arrow Curver", "Operation Complete",
-                                                    level=QgsMessageBar.INFO, duration=3)
+            # try:
+            import cProfile
+            from JennyAlgorithm import run
+            print('profiling')
+            cProfile.runctx('run(iface=self.iface, lineLayer=selectedLineLayer, nodeLayer=selectedNodeLayer,nodeRadiiExpr=nodeRadiiExpr, lineWidthExpr=lineWidthExpr, iterations=nIter,w_flows=w_flows, w_nodes=w_nodes, w_antiTorsion=w_antiTorsion, w_spring=w_spring,w_angRes=w_angRes, snapThreshold=nodeThreshold, bezierRes=bezierRes, alpha=alpha,beta=beta, kShort=kShort, kLong=kLong, Cp=Cp, K=K, C=C,constraintRectAspect=constrainAspect, nodeBuffer=nodeBuffer)', globals(), locals())
+            print('done')
+            # except Exception as exception:
+            #     self.iface.messageBar().pushMessage("Flow Map Arrow Curver", "Operation Failed! An Error Occurred.",
+            #                                         level=QgsMessageBar.WARNING, duration=5)
+            #     raise
+            # else:
+            #     self.iface.messageBar().pushMessage("Flow Map Arrow Curver", "Operation Complete",
+            #                                         level=QgsMessageBar.INFO, duration=3)
