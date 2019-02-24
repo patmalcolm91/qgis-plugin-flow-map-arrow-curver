@@ -268,10 +268,7 @@ def findIntersectionOfLineSegments(start1, end1, start2, end2):
             try:
                 mBetween = (y3 - y2)/(x3 - x2)  # the slope between two points on different lines
             except ZeroDivisionError:
-                if y2 == y3:
-                    return True
-                else:
-                    return False
+                mBetween = (y3 - y1)/(x3 - x1)
             if m1 == mBetween:  # the lines are coincident
                 return True
             else:  # the lines are parallel
