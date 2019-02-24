@@ -707,7 +707,7 @@
           </rect>
          </property>
          <property name="toolTip">
-          <string>Threshold distance for considering two nodes the same.</string>
+          <string>Extra buffer distance to be provided around each node.</string>
          </property>
          <property name="decimals">
           <number>1</number>
