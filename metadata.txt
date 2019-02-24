@@ -10,7 +10,7 @@
 name=Flow Map Curved Arrow Calculator
 qgisMinimumVersion=2.0
 description=Converts straight lines representing non-branching origin-destination flows to curves
-version=1.0
+version=1.2
 author=Patrick Malcolm
 email=patmalcolm91@gmail.com
 
