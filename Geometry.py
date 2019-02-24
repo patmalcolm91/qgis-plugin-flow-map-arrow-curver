@@ -121,7 +121,7 @@ class Vector(object):
         :type other: Vector
         """
         dp = self.dotProduct(other)
-        uv = deepcopy(other)
+        uv = Vector(other.x, other.y)
         uv.setMagnitude(dp/other.getMagnitude())
         return uv
 
