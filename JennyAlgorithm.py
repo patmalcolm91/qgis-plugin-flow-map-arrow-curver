@@ -563,8 +563,8 @@ class FlowMap(object):
                     if inAndOutFlows[j].locked:
                         continue
                     if inAndOutFlows[i].interesectsFlowLine(inAndOutFlows[j]):
-                        pointM = deepcopy(inAndOutFlows[i].p1)
-                        pointN = deepcopy(inAndOutFlows[j].p1)
+                        pointM = inAndOutFlows[i].p1
+                        pointN = inAndOutFlows[j].p1
                         # determine point A
                         if inAndOutFlows[i] in node.outflows:
                             pointA = inAndOutFlows[i].endNode
