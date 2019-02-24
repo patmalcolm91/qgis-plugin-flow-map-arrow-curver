@@ -319,6 +319,9 @@ class FlowMap(object):
             geom = feature.geometry().asPolyline()
             startPoint = Point(geom[0].x(), geom[0].y())
             endPoint = Point(geom[-1].x(), geom[-1].y())
+            if startPoint == endPoint:
+                raise Warning("Flowline with zero length detected. Skipping")
+                continue
             startNode, endNode = None, None
             for node in self.nodes:
                 if startPoint.distanceFrom(node) <= self.snapThreshold:
