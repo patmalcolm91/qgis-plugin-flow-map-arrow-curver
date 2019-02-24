@@ -359,7 +359,10 @@ class FlowMap(object):
                     for otherPt in otherPts:
                         dj = vectorFromPoints(otherPt, pt)
                         dj.scale(1.0/self.mapScale)
-                        wj = math.pow(dj.getMagnitude(), -1*self.alpha)
+                        try:
+                            wj = math.pow(dj.getMagnitude(), -1*self.alpha)
+                        except ValueError:
+                            wj = 0  # if the distance is zero, the calculation above fails, so set wj to zero
                         sumdw += dj*wj
                         sumw += wj
                         n += 1
