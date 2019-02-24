@@ -20,8 +20,8 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
-from PyQt4.QtGui import QAction, QIcon
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
 # Initialize Qt resources from file resources.py
 import resources
 # Import the code for the dialog
@@ -75,6 +75,9 @@ class FlowMapArrowCurver:
         self.lineLayerIndexMap = dict()
         self.pointLayerList = []
         self.pointLayerIndexMap = dict()
+        self.FLOWLINE_COUNT_WARNING_THRESHOLD = 100
+        self.NITER_WARNING_THRESHOLD = 20
+        self.BEZIER_RES_WARNING_THRESHOLD = 8
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -297,6 +300,32 @@ class FlowMapArrowCurver:
             bezierRes = self.dlg.bezierResBox.value()
             constrainAspect = self.dlg.constrainAspectBox.value()
             nodeBuffer = self.dlg.nodeBufferBox.value()
+
+            # Perform a check for large datasets and settings which could result in long run times
+            flowlineCount = 0
+            for fl in selectedLineLayer.getFeatures():
+                flowlineCount += 1
+            if flowlineCount > self.FLOWLINE_COUNT_WARNING_THRESHOLD and (nIter > self.NITER_WARNING_THRESHOLD or
+                bezierRes > self.BEZIER_RES_WARNING_THRESHOLD):
+                verifyBox = QMessageBox()
+                reply = QMessageBox.question(verifyBox, 'Large dataset and slow settings',
+                                             "This operation could take a long time with the given settings. "
+                                             "This can be mitigated by applying settings for a lower number of "
+                                             "iterations and a lower bezier curve resolution. Would you like to apply "
+                                             "these recommended lower-quality settings, Abort the operation,  or ignore"
+                                             " this warning and continue?",
+                                             QMessageBox.Abort | QMessageBox.Ignore | QMessageBox.Apply,
+                                             QMessageBox.Apply)
+
+                if reply == QMessageBox.Abort:
+                    self.iface.messageBar().pushMessage("Flow Map Arrow Curver", "Operation Aborted.",
+                                                        level=QgsMessageBar.INFO, duration=3)
+                    return None
+                elif reply == QMessageBox.Apply:
+                    # If the recommended settings were accepted, change them before running
+                    nIter = self.NITER_WARNING_THRESHOLD
+                    bezierRes = self.BEZIER_RES_WARNING_THRESHOLD
+                return None
 
             # Run the algorithm with the given parameters
             try:
