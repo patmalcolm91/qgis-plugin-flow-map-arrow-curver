@@ -43,8 +43,7 @@ class Vector(object):
         if hasattr(other, "x") and hasattr(other, "y"):
             return self.dotProduct(other)
         else:
-            result = deepcopy(self)
-            result.scale(other)
+            result = Vector(self.x*other, self.y*other)
             return result
 
     def __add__(self, other):
