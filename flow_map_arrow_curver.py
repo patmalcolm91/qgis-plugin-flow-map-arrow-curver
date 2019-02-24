@@ -221,8 +221,9 @@ class FlowMapArrowCurver:
             selectedLayer = self.layers[index]  # type: QgsVectorLayer
         except KeyError:
             selectedLayer = None
+        lineWidthExpr = self.dlg.lineWidthExpressionWidget.currentText()
         self.dlg.lineWidthExpressionWidget.setLayer(selectedLayer)
-        self.dlg.lineWidthExpressionWidget.setExpression("1")
+        self.dlg.lineWidthExpressionWidget.setExpression(lineWidthExpr)
 
     def nodeLayerChanged(self, index):
         """
