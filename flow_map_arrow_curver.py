@@ -323,8 +323,10 @@ class FlowMapArrowCurver:
                     return None
                 elif reply == QMessageBox.Apply:
                     # If the recommended settings were accepted, change them before running
-                    nIter = self.NITER_WARNING_THRESHOLD
-                    bezierRes = self.BEZIER_RES_WARNING_THRESHOLD
+                    if nIter > self.NITER_WARNING_THRESHOLD:
+                        nIter = self.NITER_WARNING_THRESHOLD
+                    if bezierRes > self.BEZIER_RES_WARNING_THRESHOLD:
+                        bezierRes = self.BEZIER_RES_WARNING_THRESHOLD
 
             # Run the algorithm with the given parameters
             try:
