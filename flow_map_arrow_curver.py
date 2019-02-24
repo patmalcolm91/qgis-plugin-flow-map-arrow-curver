@@ -325,7 +325,6 @@ class FlowMapArrowCurver:
                     # If the recommended settings were accepted, change them before running
                     nIter = self.NITER_WARNING_THRESHOLD
                     bezierRes = self.BEZIER_RES_WARNING_THRESHOLD
-                return None
 
             # Run the algorithm with the given parameters
             try:
